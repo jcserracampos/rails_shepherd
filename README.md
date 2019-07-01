@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/rails_shepherd.svg)](https://badge.fury.io/rb/rails_shepherd)
+
 # RailsShepherd
 
 This gem wraps the [Shepherd](https://github.com/shipshapecode/shepherd) JavaScript library so that it can be included easily in the Rails asset pipeline.

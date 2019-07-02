@@ -25,7 +25,9 @@ Or install it yourself as:
 add rails_shepherd to your application.js manifest
 
 ```
-//= require shepherd.min
+//= require popper.js
+//= require tippy.js
+//= require shepherd.min.js
 ```
 
 and include the stylesheets in your application.css manifest

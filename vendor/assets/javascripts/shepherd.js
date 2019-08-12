@@ -1,61 +1,10 @@
-/*! shepherd.js 3.1.0 */
+/*! shepherd.js 4.6.0 */
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.Shepherd = factory());
 }(this, function () { 'use strict';
-
-  function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
 
   function _extends() {
     _extends = Object.assign || function (target) {
@@ -75,54 +24,10 @@
     return _extends.apply(this, arguments);
   }
 
-  function _objectSpread(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i] != null ? arguments[i] : {};
-      var ownKeys = Object.keys(source);
-
-      if (typeof Object.getOwnPropertySymbols === 'function') {
-        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-        }));
-      }
-
-      ownKeys.forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    }
-
-    return target;
-  }
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf(o);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
+  function _inheritsLoose(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
   }
 
   function _assertThisInitialized(self) {
@@ -133,104 +38,395 @@
     return self;
   }
 
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
+  var validTypes = { object: true, symbol: true };
 
-    return _assertThisInitialized(self);
+  var isImplemented = function () {
+  	var symbol;
+  	if (typeof Symbol !== 'function') return false;
+  	symbol = Symbol('test symbol');
+  	try { String(symbol); } catch (e) { return false; }
+
+  	// Return 'true' also for polyfills
+  	if (!validTypes[typeof Symbol.iterator]) return false;
+  	if (!validTypes[typeof Symbol.toPrimitive]) return false;
+  	if (!validTypes[typeof Symbol.toStringTag]) return false;
+
+  	return true;
+  };
+
+  var global$1 = (function () {
+  	if (this) return this;
+
+  	// Unexpected strict mode (may happen if e.g. bundled into ESM module) be nice
+
+  	// Thanks @mathiasbynens -> https://mathiasbynens.be/notes/globalthis
+  	// In all ES5 engines global object inherits from Object.prototype
+  	// (if you approached one that doesn't please report)
+  	Object.defineProperty(Object.prototype, "__global__", {
+  		get: function () { return this; },
+  		configurable: true
+  	});
+  	try { return __global__; }
+  	finally { delete Object.prototype.__global__; }
+  })();
+
+  var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+  function unwrapExports (x) {
+  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
   }
 
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  function createCommonjsModule(fn, module) {
+  	return module = { exports: {} }, fn(module, module.exports), module.exports;
   }
 
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
+  // ES3 safe
+  var _undefined = void 0;
+
+  var is = function (value) { return value !== _undefined && value !== null; };
+
+  // prettier-ignore
+  var possibleTypes = { "object": true, "function": true, "undefined": true /* document.all */ };
+
+  var is$1 = function (value) {
+  	if (!is(value)) return false;
+  	return hasOwnProperty.call(possibleTypes, typeof value);
+  };
+
+  var is$2 = function (value) {
+  	if (!is$1(value)) return false;
+  	try {
+  		if (!value.constructor) return false;
+  		return value.constructor.prototype === value;
+  	} catch (error) {
+  		return false;
+  	}
+  };
+
+  var is$3 = function (value) {
+  	if (typeof value !== "function") return false;
+
+  	if (!hasOwnProperty.call(value, "length")) return false;
+
+  	try {
+  		if (typeof value.length !== "number") return false;
+  		if (typeof value.call !== "function") return false;
+  		if (typeof value.apply !== "function") return false;
+  	} catch (error) {
+  		return false;
+  	}
+
+  	return !is$2(value);
+  };
+
+  var classRe = /^\s*class[\s{/}]/, functionToString = Function.prototype.toString;
+
+  var is$4 = function (value) {
+  	if (!is$3(value)) return false;
+  	if (classRe.test(functionToString.call(value))) return false;
+  	return true;
+  };
+
+  var isImplemented$1 = function () {
+  	var assign = Object.assign, obj;
+  	if (typeof assign !== "function") return false;
+  	obj = { foo: "raz" };
+  	assign(obj, { bar: "dwa" }, { trzy: "trzy" });
+  	return (obj.foo + obj.bar + obj.trzy) === "razdwatrzy";
+  };
+
+  var isImplemented$2 = function () {
+  	try {
+  		Object.keys("primitive");
+  		return true;
+  	} catch (e) {
+  		return false;
+  	}
+  };
+
+  // eslint-disable-next-line no-empty-function
+  var noop = function () {};
+
+  var _undefined$1 = noop(); // Support ES3 engines
+
+  var isValue = function (val) {
+   return (val !== _undefined$1) && (val !== null);
+  };
+
+  var keys = Object.keys;
+
+  var shim = function (object) { return keys(isValue(object) ? Object(object) : object); };
+
+  var keys$1 = isImplemented$2() ? Object.keys : shim;
+
+  var validValue = function (value) {
+  	if (!isValue(value)) throw new TypeError("Cannot use null or undefined");
+  	return value;
+  };
+
+  var max   = Math.max;
+
+  var shim$1 = function (dest, src /*, …srcn*/) {
+  	var error, i, length = max(arguments.length, 2), assign;
+  	dest = Object(validValue(dest));
+  	assign = function (key) {
+  		try {
+  			dest[key] = src[key];
+  		} catch (e) {
+  			if (!error) error = e;
+  		}
+  	};
+  	for (i = 1; i < length; ++i) {
+  		src = arguments[i];
+  		keys$1(src).forEach(assign);
+  	}
+  	if (error !== undefined) throw error;
+  	return dest;
+  };
+
+  var assign = isImplemented$1()
+  	? Object.assign
+  	: shim$1;
+
+  var forEach = Array.prototype.forEach, create = Object.create;
+
+  var process = function (src, obj) {
+  	var key;
+  	for (key in src) obj[key] = src[key];
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  var normalizeOptions = function (opts1 /*, …options*/) {
+  	var result = create(null);
+  	forEach.call(arguments, function (options) {
+  		if (!isValue(options)) return;
+  		process(Object(options), result);
+  	});
+  	return result;
+  };
+
+  var str = "razdwatrzy";
+
+  var isImplemented$3 = function () {
+  	if (typeof str.contains !== "function") return false;
+  	return (str.contains("dwa") === true) && (str.contains("foo") === false);
+  };
+
+  var indexOf = String.prototype.indexOf;
+
+  var shim$2 = function (searchString/*, position*/) {
+  	return indexOf.call(this, searchString, arguments[1]) > -1;
+  };
+
+  var contains = isImplemented$3()
+  	? String.prototype.contains
+  	: shim$2;
+
+  var d_1 = createCommonjsModule(function (module) {
+
+
+
+  var d = (module.exports = function (dscr, value/*, options*/) {
+  	var c, e, w, options, desc;
+  	if (arguments.length < 2 || typeof dscr !== "string") {
+  		options = value;
+  		value = dscr;
+  		dscr = null;
+  	} else {
+  		options = arguments[2];
+  	}
+  	if (is(dscr)) {
+  		c = contains.call(dscr, "c");
+  		e = contains.call(dscr, "e");
+  		w = contains.call(dscr, "w");
+  	} else {
+  		c = w = true;
+  		e = false;
+  	}
+
+  	desc = { value: value, configurable: c, enumerable: e, writable: w };
+  	return !options ? desc : assign(normalizeOptions(options), desc);
+  });
+
+  d.gs = function (dscr, get, set/*, options*/) {
+  	var c, e, options, desc;
+  	if (typeof dscr !== "string") {
+  		options = set;
+  		set = get;
+  		get = dscr;
+  		dscr = null;
+  	} else {
+  		options = arguments[3];
+  	}
+  	if (!is(get)) {
+  		get = undefined;
+  	} else if (!is$4(get)) {
+  		options = get;
+  		get = set = undefined;
+  	} else if (!is(set)) {
+  		set = undefined;
+  	} else if (!is$4(set)) {
+  		options = set;
+  		set = undefined;
+  	}
+  	if (is(dscr)) {
+  		c = contains.call(dscr, "c");
+  		e = contains.call(dscr, "e");
+  	} else {
+  		c = true;
+  		e = false;
+  	}
+
+  	desc = { get: get, set: set, configurable: c, enumerable: e };
+  	return !options ? desc : assign(normalizeOptions(options), desc);
+  };
+  });
+
+  var isSymbol = function (x) {
+  	if (!x) return false;
+  	if (typeof x === 'symbol') return true;
+  	if (!x.constructor) return false;
+  	if (x.constructor.name !== 'Symbol') return false;
+  	return (x[x.constructor.toStringTag] === 'Symbol');
+  };
+
+  var validateSymbol = function (value) {
+  	if (!isSymbol(value)) throw new TypeError(value + " is not a symbol");
+  	return value;
+  };
+
+  var create$1 = Object.create, defineProperties = Object.defineProperties
+    , defineProperty = Object.defineProperty, objPrototype = Object.prototype
+    , NativeSymbol, SymbolPolyfill, HiddenSymbol, globalSymbols = create$1(null)
+    , isNativeSafe;
+
+  if (typeof Symbol === 'function') {
+  	NativeSymbol = Symbol;
+  	try {
+  		String(NativeSymbol());
+  		isNativeSafe = true;
+  	} catch (ignore) {}
   }
 
-  function _iterableToArrayLimit(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
+  var generateName = (function () {
+  	var created = create$1(null);
+  	return function (desc) {
+  		var postfix = 0, name, ie11BugWorkaround;
+  		while (created[desc + (postfix || '')]) ++postfix;
+  		desc += (postfix || '');
+  		created[desc] = true;
+  		name = '@@' + desc;
+  		defineProperty(objPrototype, name, d_1.gs(null, function (value) {
+  			// For IE11 issue see:
+  			// https://connect.microsoft.com/IE/feedbackdetail/view/1928508/
+  			//    ie11-broken-getters-on-dom-objects
+  			// https://github.com/medikoo/es6-symbol/issues/12
+  			if (ie11BugWorkaround) return;
+  			ie11BugWorkaround = true;
+  			defineProperty(this, name, d_1(value));
+  			ie11BugWorkaround = false;
+  		}));
+  		return name;
+  	};
+  }());
 
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
+  // Internal constructor (not one exposed) for creating Symbol instances.
+  // This one is used to ensure that `someSymbol instanceof Symbol` always return false
+  HiddenSymbol = function Symbol(description) {
+  	if (this instanceof HiddenSymbol) throw new TypeError('Symbol is not a constructor');
+  	return SymbolPolyfill(description);
+  };
 
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
+  // Exposed `Symbol` constructor
+  // (returns instances of HiddenSymbol)
+  var polyfill = SymbolPolyfill = function Symbol(description) {
+  	var symbol;
+  	if (this instanceof Symbol) throw new TypeError('Symbol is not a constructor');
+  	if (isNativeSafe) return NativeSymbol(description);
+  	symbol = create$1(HiddenSymbol.prototype);
+  	description = (description === undefined ? '' : String(description));
+  	return defineProperties(symbol, {
+  		__description__: d_1('', description),
+  		__name__: d_1('', generateName(description))
+  	});
+  };
+  defineProperties(SymbolPolyfill, {
+  	for: d_1(function (key) {
+  		if (globalSymbols[key]) return globalSymbols[key];
+  		return (globalSymbols[key] = SymbolPolyfill(String(key)));
+  	}),
+  	keyFor: d_1(function (s) {
+  		var key;
+  		validateSymbol(s);
+  		for (key in globalSymbols) if (globalSymbols[key] === s) return key;
+  	}),
 
-    return _arr;
-  }
+  	// To ensure proper interoperability with other native functions (e.g. Array.from)
+  	// fallback to eventual native implementation of given symbol
+  	hasInstance: d_1('', (NativeSymbol && NativeSymbol.hasInstance) || SymbolPolyfill('hasInstance')),
+  	isConcatSpreadable: d_1('', (NativeSymbol && NativeSymbol.isConcatSpreadable) ||
+  		SymbolPolyfill('isConcatSpreadable')),
+  	iterator: d_1('', (NativeSymbol && NativeSymbol.iterator) || SymbolPolyfill('iterator')),
+  	match: d_1('', (NativeSymbol && NativeSymbol.match) || SymbolPolyfill('match')),
+  	replace: d_1('', (NativeSymbol && NativeSymbol.replace) || SymbolPolyfill('replace')),
+  	search: d_1('', (NativeSymbol && NativeSymbol.search) || SymbolPolyfill('search')),
+  	species: d_1('', (NativeSymbol && NativeSymbol.species) || SymbolPolyfill('species')),
+  	split: d_1('', (NativeSymbol && NativeSymbol.split) || SymbolPolyfill('split')),
+  	toPrimitive: d_1('', (NativeSymbol && NativeSymbol.toPrimitive) || SymbolPolyfill('toPrimitive')),
+  	toStringTag: d_1('', (NativeSymbol && NativeSymbol.toStringTag) || SymbolPolyfill('toStringTag')),
+  	unscopables: d_1('', (NativeSymbol && NativeSymbol.unscopables) || SymbolPolyfill('unscopables'))
+  });
 
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  // Internal tweaks for real symbol producer
+  defineProperties(HiddenSymbol.prototype, {
+  	constructor: d_1(SymbolPolyfill),
+  	toString: d_1('', function () { return this.__name__; })
+  });
+
+  // Proper implementation of methods exposed on Symbol.prototype
+  // They won't be accessible on produced symbol instances as they derive from HiddenSymbol.prototype
+  defineProperties(SymbolPolyfill.prototype, {
+  	toString: d_1(function () { return 'Symbol (' + validateSymbol(this).__description__ + ')'; }),
+  	valueOf: d_1(function () { return validateSymbol(this); })
+  });
+  defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toPrimitive, d_1('', function () {
+  	var symbol = validateSymbol(this);
+  	if (typeof symbol === 'symbol') return symbol;
+  	return symbol.toString();
+  }));
+  defineProperty(SymbolPolyfill.prototype, SymbolPolyfill.toStringTag, d_1('c', 'Symbol'));
+
+  // Proper implementaton of toPrimitive and toStringTag for returned symbol instances
+  defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toStringTag,
+  	d_1('c', SymbolPolyfill.prototype[SymbolPolyfill.toStringTag]));
+
+  // Note: It's important to define `toPrimitive` as last one, as some implementations
+  // implement `toPrimitive` natively without implementing `toStringTag` (or other specified symbols)
+  // And that may invoke error in definition flow:
+  // See: https://github.com/medikoo/es6-symbol/issues/13#issuecomment-164146149
+  defineProperty(HiddenSymbol.prototype, SymbolPolyfill.toPrimitive,
+  	d_1('c', SymbolPolyfill.prototype[SymbolPolyfill.toPrimitive]));
+
+  if (!isImplemented()) {
+  	Object.defineProperty(global$1, 'Symbol',
+  		{ value: polyfill, configurable: true, enumerable: false,
+  			writable: true });
   }
 
   /**
-   * lodash 4.0.0 (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   * Available under MIT license <https://lodash.com/license>
+   * Checks if `value` is classified as an `HTMLElement`.
+   * @param {*} value The param to check if it is an HTMLElement
    */
-
-  /**
-   * Checks if `value` is object-like. A value is object-like if it's not `null`
-   * and has a `typeof` result of "object".
-   *
-   * @static
-   * @memberOf _
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-   * @example
-   *
-   * _.isObjectLike({});
-   * // => true
-   *
-   * _.isObjectLike([1, 2, 3]);
-   * // => true
-   *
-   * _.isObjectLike(_.noop);
-   * // => false
-   *
-   * _.isObjectLike(null);
-   * // => false
-   */
-  function isObjectLike(value) {
-    return !!value && typeof value == 'object';
+  function isElement(value) {
+    return value instanceof HTMLElement;
   }
-
-  var lodash_isobjectlike = isObjectLike;
-
   /**
    * Checks if `value` is classified as a `Function` object.
    * @param {*} value The param to check if it is a function
    */
+
   function isFunction(value) {
     return typeof value === 'function';
-  }
-  /**
-   * Checks if `value` is classified as a `Number` object.
-   * @param {*} value The param to check if it is a number
-   */
-
-  function isNumber(value) {
-    return typeof value === 'number';
   }
   /**
    * Checks if `value` is classified as a `String` object.
@@ -249,118 +445,1684 @@
     return value === undefined;
   }
 
-  /**
-   * lodash 4.1.3 (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
+  var Evented =
+  /*#__PURE__*/
+  function () {
+    function Evented() {}
 
-  /** Used for built-in method references. */
-  var objectProto = Object.prototype;
+    var _proto = Evented.prototype;
 
-  /** Used to check objects for own properties. */
-  var hasOwnProperty = objectProto.hasOwnProperty;
+    _proto.on = function on(event, handler, ctx) {
+      var once = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
 
-  /**
-   * Assigns `value` to `key` of `object` if the existing value is not equivalent
-   * using [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
-   * for equality comparisons.
-   *
-   * @private
-   * @param {Object} object The object to modify.
-   * @param {string} key The key of the property to assign.
-   * @param {*} value The value to assign.
-   */
-  function assignValue(object, key, value) {
-    var objValue = object[key];
-    if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) ||
-        (value === undefined && !(key in object))) {
-      object[key] = value;
+      if (isUndefined(this.bindings)) {
+        this.bindings = {};
+      }
+
+      if (isUndefined(this.bindings[event])) {
+        this.bindings[event] = [];
+      }
+
+      this.bindings[event].push({
+        handler: handler,
+        ctx: ctx,
+        once: once
+      });
+    };
+
+    _proto.once = function once(event, handler, ctx) {
+      this.on(event, handler, ctx, true);
+    };
+
+    _proto.off = function off(event, handler) {
+      var _this = this;
+
+      if (isUndefined(this.bindings) || isUndefined(this.bindings[event])) {
+        return false;
+      }
+
+      if (isUndefined(handler)) {
+        delete this.bindings[event];
+      } else {
+        this.bindings[event].forEach(function (binding, index) {
+          if (binding.handler === handler) {
+            _this.bindings[event].splice(index, 1);
+          }
+        });
+      }
+    };
+
+    _proto.trigger = function trigger(event) {
+      var _this2 = this;
+
+      if (!isUndefined(this.bindings) && this.bindings[event]) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        this.bindings[event].forEach(function (binding, index) {
+          var ctx = binding.ctx,
+              handler = binding.handler,
+              once = binding.once;
+          var context = ctx || _this2;
+          handler.apply(context, args);
+
+          if (once) {
+            _this2.bindings[event].splice(index, 1);
+          }
+        });
+      }
+    };
+
+    return Evented;
+  }();
+
+  var VNode = function VNode() {};
+
+  var options = {};
+
+  var stack = [];
+
+  var EMPTY_CHILDREN = [];
+
+  function h(nodeName, attributes) {
+  	var children = EMPTY_CHILDREN,
+  	    lastSimple,
+  	    child,
+  	    simple,
+  	    i;
+  	for (i = arguments.length; i-- > 2;) {
+  		stack.push(arguments[i]);
+  	}
+  	if (attributes && attributes.children != null) {
+  		if (!stack.length) stack.push(attributes.children);
+  		delete attributes.children;
+  	}
+  	while (stack.length) {
+  		if ((child = stack.pop()) && child.pop !== undefined) {
+  			for (i = child.length; i--;) {
+  				stack.push(child[i]);
+  			}
+  		} else {
+  			if (typeof child === 'boolean') child = null;
+
+  			if (simple = typeof nodeName !== 'function') {
+  				if (child == null) child = '';else if (typeof child === 'number') child = String(child);else if (typeof child !== 'string') simple = false;
+  			}
+
+  			if (simple && lastSimple) {
+  				children[children.length - 1] += child;
+  			} else if (children === EMPTY_CHILDREN) {
+  				children = [child];
+  			} else {
+  				children.push(child);
+  			}
+
+  			lastSimple = simple;
+  		}
+  	}
+
+  	var p = new VNode();
+  	p.nodeName = nodeName;
+  	p.children = children;
+  	p.attributes = attributes == null ? undefined : attributes;
+  	p.key = attributes == null ? undefined : attributes.key;
+
+  	return p;
+  }
+
+  function extend(obj, props) {
+    for (var i in props) {
+      obj[i] = props[i];
+    }return obj;
+  }
+
+  function applyRef(ref, value) {
+    if (ref) {
+      if (typeof ref == 'function') ref(value);else ref.current = value;
     }
   }
 
-  /**
-   * This base implementation of `_.zipObject` which assigns values using `assignFunc`.
-   *
-   * @private
-   * @param {Array} props The property identifiers.
-   * @param {Array} values The property values.
-   * @param {Function} assignFunc The function to assign values.
-   * @returns {Object} Returns the new object.
-   */
-  function baseZipObject(props, values, assignFunc) {
-    var index = -1,
-        length = props.length,
-        valsLength = values.length,
-        result = {};
+  var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 
-    while (++index < length) {
-      var value = index < valsLength ? values[index] : undefined;
-      assignFunc(result, props[index], value);
+  function cloneElement(vnode, props) {
+    return h(vnode.nodeName, extend(extend({}, vnode.attributes), props), arguments.length > 2 ? [].slice.call(arguments, 2) : vnode.children);
+  }
+
+  var IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i;
+
+  var items = [];
+
+  function enqueueRender(component) {
+  	if (!component._dirty && (component._dirty = true) && items.push(component) == 1) {
+  		( defer)(rerender);
+  	}
+  }
+
+  function rerender() {
+  	var p;
+  	while (p = items.pop()) {
+  		if (p._dirty) renderComponent(p);
+  	}
+  }
+
+  function isSameNodeType(node, vnode, hydrating) {
+  	if (typeof vnode === 'string' || typeof vnode === 'number') {
+  		return node.splitText !== undefined;
+  	}
+  	if (typeof vnode.nodeName === 'string') {
+  		return !node._componentConstructor && isNamedNode(node, vnode.nodeName);
+  	}
+  	return hydrating || node._componentConstructor === vnode.nodeName;
+  }
+
+  function isNamedNode(node, nodeName) {
+  	return node.normalizedNodeName === nodeName || node.nodeName.toLowerCase() === nodeName.toLowerCase();
+  }
+
+  function getNodeProps(vnode) {
+  	var props = extend({}, vnode.attributes);
+  	props.children = vnode.children;
+
+  	var defaultProps = vnode.nodeName.defaultProps;
+  	if (defaultProps !== undefined) {
+  		for (var i in defaultProps) {
+  			if (props[i] === undefined) {
+  				props[i] = defaultProps[i];
+  			}
+  		}
+  	}
+
+  	return props;
+  }
+
+  function createNode(nodeName, isSvg) {
+  	var node = isSvg ? document.createElementNS('http://www.w3.org/2000/svg', nodeName) : document.createElement(nodeName);
+  	node.normalizedNodeName = nodeName;
+  	return node;
+  }
+
+  function removeNode(node) {
+  	var parentNode = node.parentNode;
+  	if (parentNode) parentNode.removeChild(node);
+  }
+
+  function setAccessor(node, name, old, value, isSvg) {
+  	if (name === 'className') name = 'class';
+
+  	if (name === 'key') ; else if (name === 'ref') {
+  		applyRef(old, null);
+  		applyRef(value, node);
+  	} else if (name === 'class' && !isSvg) {
+  		node.className = value || '';
+  	} else if (name === 'style') {
+  		if (!value || typeof value === 'string' || typeof old === 'string') {
+  			node.style.cssText = value || '';
+  		}
+  		if (value && typeof value === 'object') {
+  			if (typeof old !== 'string') {
+  				for (var i in old) {
+  					if (!(i in value)) node.style[i] = '';
+  				}
+  			}
+  			for (var i in value) {
+  				node.style[i] = typeof value[i] === 'number' && IS_NON_DIMENSIONAL.test(i) === false ? value[i] + 'px' : value[i];
+  			}
+  		}
+  	} else if (name === 'dangerouslySetInnerHTML') {
+  		if (value) node.innerHTML = value.__html || '';
+  	} else if (name[0] == 'o' && name[1] == 'n') {
+  		var useCapture = name !== (name = name.replace(/Capture$/, ''));
+  		name = name.toLowerCase().substring(2);
+  		if (value) {
+  			if (!old) node.addEventListener(name, eventProxy, useCapture);
+  		} else {
+  			node.removeEventListener(name, eventProxy, useCapture);
+  		}
+  		(node._listeners || (node._listeners = {}))[name] = value;
+  	} else if (name !== 'list' && name !== 'type' && !isSvg && name in node) {
+  		try {
+  			node[name] = value == null ? '' : value;
+  		} catch (e) {}
+  		if ((value == null || value === false) && name != 'spellcheck') node.removeAttribute(name);
+  	} else {
+  		var ns = isSvg && name !== (name = name.replace(/^xlink:?/, ''));
+
+  		if (value == null || value === false) {
+  			if (ns) node.removeAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase());else node.removeAttribute(name);
+  		} else if (typeof value !== 'function') {
+  			if (ns) node.setAttributeNS('http://www.w3.org/1999/xlink', name.toLowerCase(), value);else node.setAttribute(name, value);
+  		}
+  	}
+  }
+
+  function eventProxy(e) {
+  	return this._listeners[e.type]( e);
+  }
+
+  var mounts = [];
+
+  var diffLevel = 0;
+
+  var isSvgMode = false;
+
+  var hydrating = false;
+
+  function flushMounts() {
+  	var c;
+  	while (c = mounts.shift()) {
+  		if (c.componentDidMount) c.componentDidMount();
+  	}
+  }
+
+  function diff(dom, vnode, context, mountAll, parent, componentRoot) {
+  	if (!diffLevel++) {
+  		isSvgMode = parent != null && parent.ownerSVGElement !== undefined;
+
+  		hydrating = dom != null && !('__preactattr_' in dom);
+  	}
+
+  	var ret = idiff(dom, vnode, context, mountAll, componentRoot);
+
+  	if (parent && ret.parentNode !== parent) parent.appendChild(ret);
+
+  	if (! --diffLevel) {
+  		hydrating = false;
+
+  		if (!componentRoot) flushMounts();
+  	}
+
+  	return ret;
+  }
+
+  function idiff(dom, vnode, context, mountAll, componentRoot) {
+  	var out = dom,
+  	    prevSvgMode = isSvgMode;
+
+  	if (vnode == null || typeof vnode === 'boolean') vnode = '';
+
+  	if (typeof vnode === 'string' || typeof vnode === 'number') {
+  		if (dom && dom.splitText !== undefined && dom.parentNode && (!dom._component || componentRoot)) {
+  			if (dom.nodeValue != vnode) {
+  				dom.nodeValue = vnode;
+  			}
+  		} else {
+  			out = document.createTextNode(vnode);
+  			if (dom) {
+  				if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
+  				recollectNodeTree(dom, true);
+  			}
+  		}
+
+  		out['__preactattr_'] = true;
+
+  		return out;
+  	}
+
+  	var vnodeName = vnode.nodeName;
+  	if (typeof vnodeName === 'function') {
+  		return buildComponentFromVNode(dom, vnode, context, mountAll);
+  	}
+
+  	isSvgMode = vnodeName === 'svg' ? true : vnodeName === 'foreignObject' ? false : isSvgMode;
+
+  	vnodeName = String(vnodeName);
+  	if (!dom || !isNamedNode(dom, vnodeName)) {
+  		out = createNode(vnodeName, isSvgMode);
+
+  		if (dom) {
+  			while (dom.firstChild) {
+  				out.appendChild(dom.firstChild);
+  			}
+  			if (dom.parentNode) dom.parentNode.replaceChild(out, dom);
+
+  			recollectNodeTree(dom, true);
+  		}
+  	}
+
+  	var fc = out.firstChild,
+  	    props = out['__preactattr_'],
+  	    vchildren = vnode.children;
+
+  	if (props == null) {
+  		props = out['__preactattr_'] = {};
+  		for (var a = out.attributes, i = a.length; i--;) {
+  			props[a[i].name] = a[i].value;
+  		}
+  	}
+
+  	if (!hydrating && vchildren && vchildren.length === 1 && typeof vchildren[0] === 'string' && fc != null && fc.splitText !== undefined && fc.nextSibling == null) {
+  		if (fc.nodeValue != vchildren[0]) {
+  			fc.nodeValue = vchildren[0];
+  		}
+  	} else if (vchildren && vchildren.length || fc != null) {
+  			innerDiffNode(out, vchildren, context, mountAll, hydrating || props.dangerouslySetInnerHTML != null);
+  		}
+
+  	diffAttributes(out, vnode.attributes, props);
+
+  	isSvgMode = prevSvgMode;
+
+  	return out;
+  }
+
+  function innerDiffNode(dom, vchildren, context, mountAll, isHydrating) {
+  	var originalChildren = dom.childNodes,
+  	    children = [],
+  	    keyed = {},
+  	    keyedLen = 0,
+  	    min = 0,
+  	    len = originalChildren.length,
+  	    childrenLen = 0,
+  	    vlen = vchildren ? vchildren.length : 0,
+  	    j,
+  	    c,
+  	    f,
+  	    vchild,
+  	    child;
+
+  	if (len !== 0) {
+  		for (var i = 0; i < len; i++) {
+  			var _child = originalChildren[i],
+  			    props = _child['__preactattr_'],
+  			    key = vlen && props ? _child._component ? _child._component.__key : props.key : null;
+  			if (key != null) {
+  				keyedLen++;
+  				keyed[key] = _child;
+  			} else if (props || (_child.splitText !== undefined ? isHydrating ? _child.nodeValue.trim() : true : isHydrating)) {
+  				children[childrenLen++] = _child;
+  			}
+  		}
+  	}
+
+  	if (vlen !== 0) {
+  		for (var i = 0; i < vlen; i++) {
+  			vchild = vchildren[i];
+  			child = null;
+
+  			var key = vchild.key;
+  			if (key != null) {
+  				if (keyedLen && keyed[key] !== undefined) {
+  					child = keyed[key];
+  					keyed[key] = undefined;
+  					keyedLen--;
+  				}
+  			} else if (min < childrenLen) {
+  					for (j = min; j < childrenLen; j++) {
+  						if (children[j] !== undefined && isSameNodeType(c = children[j], vchild, isHydrating)) {
+  							child = c;
+  							children[j] = undefined;
+  							if (j === childrenLen - 1) childrenLen--;
+  							if (j === min) min++;
+  							break;
+  						}
+  					}
+  				}
+
+  			child = idiff(child, vchild, context, mountAll);
+
+  			f = originalChildren[i];
+  			if (child && child !== dom && child !== f) {
+  				if (f == null) {
+  					dom.appendChild(child);
+  				} else if (child === f.nextSibling) {
+  					removeNode(f);
+  				} else {
+  					dom.insertBefore(child, f);
+  				}
+  			}
+  		}
+  	}
+
+  	if (keyedLen) {
+  		for (var i in keyed) {
+  			if (keyed[i] !== undefined) recollectNodeTree(keyed[i], false);
+  		}
+  	}
+
+  	while (min <= childrenLen) {
+  		if ((child = children[childrenLen--]) !== undefined) recollectNodeTree(child, false);
+  	}
+  }
+
+  function recollectNodeTree(node, unmountOnly) {
+  	var component = node._component;
+  	if (component) {
+  		unmountComponent(component);
+  	} else {
+  		if (node['__preactattr_'] != null) applyRef(node['__preactattr_'].ref, null);
+
+  		if (unmountOnly === false || node['__preactattr_'] == null) {
+  			removeNode(node);
+  		}
+
+  		removeChildren(node);
+  	}
+  }
+
+  function removeChildren(node) {
+  	node = node.lastChild;
+  	while (node) {
+  		var next = node.previousSibling;
+  		recollectNodeTree(node, true);
+  		node = next;
+  	}
+  }
+
+  function diffAttributes(dom, attrs, old) {
+  	var name;
+
+  	for (name in old) {
+  		if (!(attrs && attrs[name] != null) && old[name] != null) {
+  			setAccessor(dom, name, old[name], old[name] = undefined, isSvgMode);
+  		}
+  	}
+
+  	for (name in attrs) {
+  		if (name !== 'children' && name !== 'innerHTML' && (!(name in old) || attrs[name] !== (name === 'value' || name === 'checked' ? dom[name] : old[name]))) {
+  			setAccessor(dom, name, old[name], old[name] = attrs[name], isSvgMode);
+  		}
+  	}
+  }
+
+  var recyclerComponents = [];
+
+  function createComponent(Ctor, props, context) {
+  	var inst,
+  	    i = recyclerComponents.length;
+
+  	if (Ctor.prototype && Ctor.prototype.render) {
+  		inst = new Ctor(props, context);
+  		Component.call(inst, props, context);
+  	} else {
+  		inst = new Component(props, context);
+  		inst.constructor = Ctor;
+  		inst.render = doRender;
+  	}
+
+  	while (i--) {
+  		if (recyclerComponents[i].constructor === Ctor) {
+  			inst.nextBase = recyclerComponents[i].nextBase;
+  			recyclerComponents.splice(i, 1);
+  			return inst;
+  		}
+  	}
+
+  	return inst;
+  }
+
+  function doRender(props, state, context) {
+  	return this.constructor(props, context);
+  }
+
+  function setComponentProps(component, props, renderMode, context, mountAll) {
+  	if (component._disable) return;
+  	component._disable = true;
+
+  	component.__ref = props.ref;
+  	component.__key = props.key;
+  	delete props.ref;
+  	delete props.key;
+
+  	if (typeof component.constructor.getDerivedStateFromProps === 'undefined') {
+  		if (!component.base || mountAll) {
+  			if (component.componentWillMount) component.componentWillMount();
+  		} else if (component.componentWillReceiveProps) {
+  			component.componentWillReceiveProps(props, context);
+  		}
+  	}
+
+  	if (context && context !== component.context) {
+  		if (!component.prevContext) component.prevContext = component.context;
+  		component.context = context;
+  	}
+
+  	if (!component.prevProps) component.prevProps = component.props;
+  	component.props = props;
+
+  	component._disable = false;
+
+  	if (renderMode !== 0) {
+  		if (renderMode === 1 || options.syncComponentUpdates !== false || !component.base) {
+  			renderComponent(component, 1, mountAll);
+  		} else {
+  			enqueueRender(component);
+  		}
+  	}
+
+  	applyRef(component.__ref, component);
+  }
+
+  function renderComponent(component, renderMode, mountAll, isChild) {
+  	if (component._disable) return;
+
+  	var props = component.props,
+  	    state = component.state,
+  	    context = component.context,
+  	    previousProps = component.prevProps || props,
+  	    previousState = component.prevState || state,
+  	    previousContext = component.prevContext || context,
+  	    isUpdate = component.base,
+  	    nextBase = component.nextBase,
+  	    initialBase = isUpdate || nextBase,
+  	    initialChildComponent = component._component,
+  	    skip = false,
+  	    snapshot = previousContext,
+  	    rendered,
+  	    inst,
+  	    cbase;
+
+  	if (component.constructor.getDerivedStateFromProps) {
+  		state = extend(extend({}, state), component.constructor.getDerivedStateFromProps(props, state));
+  		component.state = state;
+  	}
+
+  	if (isUpdate) {
+  		component.props = previousProps;
+  		component.state = previousState;
+  		component.context = previousContext;
+  		if (renderMode !== 2 && component.shouldComponentUpdate && component.shouldComponentUpdate(props, state, context) === false) {
+  			skip = true;
+  		} else if (component.componentWillUpdate) {
+  			component.componentWillUpdate(props, state, context);
+  		}
+  		component.props = props;
+  		component.state = state;
+  		component.context = context;
+  	}
+
+  	component.prevProps = component.prevState = component.prevContext = component.nextBase = null;
+  	component._dirty = false;
+
+  	if (!skip) {
+  		rendered = component.render(props, state, context);
+
+  		if (component.getChildContext) {
+  			context = extend(extend({}, context), component.getChildContext());
+  		}
+
+  		if (isUpdate && component.getSnapshotBeforeUpdate) {
+  			snapshot = component.getSnapshotBeforeUpdate(previousProps, previousState);
+  		}
+
+  		var childComponent = rendered && rendered.nodeName,
+  		    toUnmount,
+  		    base;
+
+  		if (typeof childComponent === 'function') {
+
+  			var childProps = getNodeProps(rendered);
+  			inst = initialChildComponent;
+
+  			if (inst && inst.constructor === childComponent && childProps.key == inst.__key) {
+  				setComponentProps(inst, childProps, 1, context, false);
+  			} else {
+  				toUnmount = inst;
+
+  				component._component = inst = createComponent(childComponent, childProps, context);
+  				inst.nextBase = inst.nextBase || nextBase;
+  				inst._parentComponent = component;
+  				setComponentProps(inst, childProps, 0, context, false);
+  				renderComponent(inst, 1, mountAll, true);
+  			}
+
+  			base = inst.base;
+  		} else {
+  			cbase = initialBase;
+
+  			toUnmount = initialChildComponent;
+  			if (toUnmount) {
+  				cbase = component._component = null;
+  			}
+
+  			if (initialBase || renderMode === 1) {
+  				if (cbase) cbase._component = null;
+  				base = diff(cbase, rendered, context, mountAll || !isUpdate, initialBase && initialBase.parentNode, true);
+  			}
+  		}
+
+  		if (initialBase && base !== initialBase && inst !== initialChildComponent) {
+  			var baseParent = initialBase.parentNode;
+  			if (baseParent && base !== baseParent) {
+  				baseParent.replaceChild(base, initialBase);
+
+  				if (!toUnmount) {
+  					initialBase._component = null;
+  					recollectNodeTree(initialBase, false);
+  				}
+  			}
+  		}
+
+  		if (toUnmount) {
+  			unmountComponent(toUnmount);
+  		}
+
+  		component.base = base;
+  		if (base && !isChild) {
+  			var componentRef = component,
+  			    t = component;
+  			while (t = t._parentComponent) {
+  				(componentRef = t).base = base;
+  			}
+  			base._component = componentRef;
+  			base._componentConstructor = componentRef.constructor;
+  		}
+  	}
+
+  	if (!isUpdate || mountAll) {
+  		mounts.push(component);
+  	} else if (!skip) {
+
+  		if (component.componentDidUpdate) {
+  			component.componentDidUpdate(previousProps, previousState, snapshot);
+  		}
+  	}
+
+  	while (component._renderCallbacks.length) {
+  		component._renderCallbacks.pop().call(component);
+  	}if (!diffLevel && !isChild) flushMounts();
+  }
+
+  function buildComponentFromVNode(dom, vnode, context, mountAll) {
+  	var c = dom && dom._component,
+  	    originalComponent = c,
+  	    oldDom = dom,
+  	    isDirectOwner = c && dom._componentConstructor === vnode.nodeName,
+  	    isOwner = isDirectOwner,
+  	    props = getNodeProps(vnode);
+  	while (c && !isOwner && (c = c._parentComponent)) {
+  		isOwner = c.constructor === vnode.nodeName;
+  	}
+
+  	if (c && isOwner && (!mountAll || c._component)) {
+  		setComponentProps(c, props, 3, context, mountAll);
+  		dom = c.base;
+  	} else {
+  		if (originalComponent && !isDirectOwner) {
+  			unmountComponent(originalComponent);
+  			dom = oldDom = null;
+  		}
+
+  		c = createComponent(vnode.nodeName, props, context);
+  		if (dom && !c.nextBase) {
+  			c.nextBase = dom;
+
+  			oldDom = null;
+  		}
+  		setComponentProps(c, props, 1, context, mountAll);
+  		dom = c.base;
+
+  		if (oldDom && dom !== oldDom) {
+  			oldDom._component = null;
+  			recollectNodeTree(oldDom, false);
+  		}
+  	}
+
+  	return dom;
+  }
+
+  function unmountComponent(component) {
+
+  	var base = component.base;
+
+  	component._disable = true;
+
+  	if (component.componentWillUnmount) component.componentWillUnmount();
+
+  	component.base = null;
+
+  	var inner = component._component;
+  	if (inner) {
+  		unmountComponent(inner);
+  	} else if (base) {
+  		if (base['__preactattr_'] != null) applyRef(base['__preactattr_'].ref, null);
+
+  		component.nextBase = base;
+
+  		removeNode(base);
+  		recyclerComponents.push(component);
+
+  		removeChildren(base);
+  	}
+
+  	applyRef(component.__ref, null);
+  }
+
+  function Component(props, context) {
+  	this._dirty = true;
+
+  	this.context = context;
+
+  	this.props = props;
+
+  	this.state = this.state || {};
+
+  	this._renderCallbacks = [];
+  }
+
+  extend(Component.prototype, {
+  	setState: function setState(state, callback) {
+  		if (!this.prevState) this.prevState = this.state;
+  		this.state = extend(extend({}, this.state), typeof state === 'function' ? state(this.state, this.props) : state);
+  		if (callback) this._renderCallbacks.push(callback);
+  		enqueueRender(this);
+  	},
+  	forceUpdate: function forceUpdate(callback) {
+  		if (callback) this._renderCallbacks.push(callback);
+  		renderComponent(this, 2);
+  	},
+  	render: function render() {}
+  });
+
+  function render(vnode, parent, merge) {
+    return diff(merge, vnode, {}, false, parent, false);
+  }
+
+  function createRef() {
+  	return {};
+  }
+
+  var preact = {
+  	h: h,
+  	createElement: h,
+  	cloneElement: cloneElement,
+  	createRef: createRef,
+  	Component: Component,
+  	render: render,
+  	rerender: rerender,
+  	options: options
+  };
+
+  /**
+   * Binds all the methods on a JS Class to the `this` context of the class.
+   * Adapted from https://github.com/sindresorhus/auto-bind
+   * @param {object} self The `this` context of the class
+   * @return {object} The `this` context of the class
+   */
+  function autoBind(self) {
+    var keys = Object.getOwnPropertyNames(self.constructor.prototype);
+
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var val = self[key];
+
+      if (key !== 'constructor' && typeof val === 'function') {
+        self[key] = val.bind(self);
+      }
     }
-    return result;
+
+    return self;
   }
 
   /**
-   * This method is like `_.fromPairs` except that it accepts two arrays,
-   * one of property identifiers and one of corresponding values.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.4.0
-   * @category Array
-   * @param {Array} [props=[]] The property identifiers.
-   * @param {Array} [values=[]] The property values.
-   * @returns {Object} Returns the new object.
-   * @example
-   *
-   * _.zipObject(['a', 'b'], [1, 2]);
-   * // => { 'a': 1, 'b': 2 }
+   * Sets up the handler to determine if we should advance the tour
+   * @param {string} selector
+   * @param {Step} step The step instance
+   * @return {Function}
+   * @private
    */
-  function zipObject(props, values) {
-    return baseZipObject(props || [], values || [], assignValue);
+
+  function _setupAdvanceOnHandler(selector, step) {
+    return function (event) {
+      if (step.isOpen()) {
+        var targetIsEl = step.el && event.target === step.el;
+        var targetIsSelector = !isUndefined(selector) && event.target.matches(selector);
+
+        if (targetIsSelector || targetIsEl) {
+          step.tour.next();
+        }
+      }
+    };
+  }
+  /**
+   * Bind the event handler for advanceOn
+   * @param {Step} step The step instance
+   */
+
+
+  function bindAdvance(step) {
+    // An empty selector matches the step element
+    var _ref = step.options.advanceOn || {},
+        event = _ref.event,
+        selector = _ref.selector;
+
+    if (event) {
+      var handler = _setupAdvanceOnHandler(selector, step); // TODO: this should also bind/unbind on show/hide
+
+
+      var el;
+
+      try {
+        el = document.querySelector(selector);
+      } catch (e) {// TODO
+      }
+
+      if (!isUndefined(selector) && !el) {
+        return console.error("No element was found for the selector supplied to advanceOn: " + selector);
+      } else if (el) {
+        el.addEventListener(event, handler);
+        step.on('destroy', function () {
+          return el.removeEventListener(event, handler);
+        });
+      } else {
+        document.body.addEventListener(event, handler, true);
+        step.on('destroy', function () {
+          return document.body.removeEventListener(event, handler, true);
+        });
+      }
+    } else {
+      return console.error('advanceOn was defined, but no event name was passed.');
+    }
+  }
+
+  /*
+   * OBJECT ASSIGN DEEP
+   * Allows deep cloning of plain objects that contain primitives, nested plain objects, or nested plain arrays.
+   */
+
+  /*
+   * A unified way of returning a string that describes the type of the given variable.
+   */
+
+  function getTypeOf(input) {
+    if (input === null) {
+      return 'null';
+    } else if (typeof input === 'undefined') {
+      return 'undefined';
+    } else if (typeof input === 'object') {
+      return Array.isArray(input) ? 'array' : 'object';
+    }
+
+    return typeof input;
+  }
+  /*
+   * Branching logic which calls the correct function to clone the given value base on its type.
+   */
+
+
+  function cloneValue(value) {
+    // The value is an object so lets clone it.
+    if (getTypeOf(value) === 'object') {
+      return quickCloneObject(value);
+    } // The value is an array so lets clone it.
+    else if (getTypeOf(value) === 'array') {
+        return quickCloneArray(value);
+      } // Any other value can just be copied.
+
+
+    return value;
+  }
+  /*
+   * Enumerates the given array and returns a new array, with each of its values cloned (i.e. references broken).
+   */
+
+
+  function quickCloneArray(input) {
+    return input.map(cloneValue);
+  }
+  /*
+   * Enumerates the properties of the given object (ignoring the prototype chain) and returns a new object, with each of
+   * its values cloned (i.e. references broken).
+   */
+
+
+  function quickCloneObject(input) {
+    var output = {};
+
+    for (var key in input) {
+      if (!input.hasOwnProperty(key)) {
+        continue;
+      }
+
+      output[key] = cloneValue(input[key]);
+    }
+
+    return output;
+  }
+  /*
+   * Does the actual deep merging.
+   */
+
+
+  function executeDeepMerge(target, _objects, _options) {
+    if (_objects === void 0) {
+      _objects = [];
+    }
+
+    if (_options === void 0) {
+      _options = {};
+    }
+
+    var options = {
+      arrayBehaviour: _options.arrayBehaviour || 'replace' // Can be "merge" or "replace".
+
+    }; // Ensure we have actual objects for each.
+
+    var objects = _objects.map(function (object) {
+      return object || {};
+    });
+
+    var output = target || {}; // Enumerate the objects and their keys.
+
+    for (var oindex = 0; oindex < objects.length; oindex++) {
+      var object = objects[oindex];
+      var keys = Object.keys(object);
+
+      for (var kindex = 0; kindex < keys.length; kindex++) {
+        var key = keys[kindex];
+        var value = object[key];
+        var type = getTypeOf(value);
+        var existingValueType = getTypeOf(output[key]);
+
+        if (type === 'object') {
+          if (existingValueType !== 'undefined') {
+            var existingValue = existingValueType === 'object' ? output[key] : {};
+            output[key] = executeDeepMerge({}, [existingValue, quickCloneObject(value)], options);
+          } else {
+            output[key] = quickCloneObject(value);
+          }
+        } else if (type === 'array') {
+          if (existingValueType === 'array') {
+            var newValue = quickCloneArray(value);
+            output[key] = options.arrayBehaviour === 'merge' ? output[key].concat(newValue) : newValue;
+          } else {
+            output[key] = quickCloneArray(value);
+          }
+        } else {
+          output[key] = value;
+        }
+      }
+    }
+
+    return output;
+  }
+  /*
+   * Merge all the supplied objects into the target object, breaking all references, including those of nested objects
+   * and arrays, and even objects nested inside arrays. The first parameter is not mutated unlike Object.assign().
+   * Properties in later objects will always overwrite.
+   */
+
+
+  var objectAssignDeep = function objectAssignDeep(target) {
+    for (var _len = arguments.length, objects = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      objects[_key - 1] = arguments[_key];
+    }
+
+    return executeDeepMerge(target, objects);
+  };
+  /*
+   * Same as objectAssignDeep() except it doesn't mutate the target object and returns an entirely new object.
+   */
+
+
+  var noMutate = function objectAssignDeepInto() {
+    for (var _len2 = arguments.length, objects = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      objects[_key2] = arguments[_key2];
+    }
+
+    return executeDeepMerge({}, objects);
+  };
+  /*
+   * Allows an options object to be passed in to customise the behaviour of the function.
+   */
+
+
+  var withOptions = function objectAssignDeepInto(target, objects, options) {
+    return executeDeepMerge(target, objects, options);
+  };
+  objectAssignDeep.noMutate = noMutate;
+  objectAssignDeep.withOptions = withOptions;
+
+  /**!
+  * tippy.js v5.0.0-beta.1
+  * (c) 2017-2019 atomiks
+  * MIT License
+  */
+  function _extends$1() {
+    _extends$1 = Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+
+      return target;
+    };
+
+    return _extends$1.apply(this, arguments);
+  }
+
+  var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+  var ua = isBrowser ? navigator.userAgent : '';
+  var isIE = /MSIE |Trident\//.test(ua);
+  var isUCBrowser = /UCBrowser\//.test(ua);
+  var isIOS = isBrowser && /iPhone|iPad|iPod/.test(navigator.platform);
+
+  var defaultProps = {
+    allowHTML: true,
+    animateFill: false,
+    animation: 'fade',
+    appendTo: function appendTo() {
+      return document.body;
+    },
+    aria: 'describedby',
+    arrow: true,
+    boundary: 'scrollParent',
+    content: '',
+    delay: 0,
+    distance: 10,
+    duration: [325, 275],
+    flip: true,
+    flipBehavior: 'flip',
+    flipOnUpdate: false,
+    followCursor: false,
+    hideOnClick: true,
+    ignoreAttributes: false,
+    inertia: false,
+    interactive: false,
+    interactiveBorder: 2,
+    interactiveDebounce: 0,
+    lazy: true,
+    maxWidth: 350,
+    multiple: false,
+    offset: 0,
+    onCreate: function onCreate() {},
+    onHidden: function onHidden() {},
+    onHide: function onHide() {},
+    onMount: function onMount() {},
+    onShow: function onShow() {},
+    onShown: function onShown() {},
+    onTrigger: function onTrigger() {},
+    onUntrigger: function onUntrigger() {},
+    placement: 'top',
+    popperOptions: {},
+    role: 'tooltip',
+    showOnCreate: false,
+    sticky: false,
+    theme: '',
+    touch: true,
+    trigger: 'mouseenter focus',
+    triggerTarget: null,
+    updateDuration: 0,
+    zIndex: 9999
+    /**
+     * If the setProps() method encounters one of these, the popperInstance must be
+     * recreated
+     */
+
+  };
+  var POPPER_INSTANCE_DEPENDENCIES = ['arrow', 'boundary', 'distance', 'flip', 'flipBehavior', 'flipOnUpdate', 'offset', 'placement', 'popperOptions'];
+
+  var PASSIVE = {
+    passive: true
+  };
+  var PREVENT_OVERFLOW_PADDING = 5;
+  var ROUND_ARROW_INNER_HTML = '<svg viewBox="0 0 18 7" xmlns="http://www.w3.org/2000/svg"><path d="M0 7s2.021-.015 5.253-4.218C6.584 1.051 7.797.007 9 0c1.203-.007 2.416 1.035 3.761 2.782C16.012 7.005 18 7 18 7H0z"/></svg>';
+  var IOS_CLASS = "tippy-iOS";
+  var POPPER_CLASS = "tippy-popper";
+  var TOOLTIP_CLASS = "tippy-tooltip";
+  var CONTENT_CLASS = "tippy-content";
+  var BACKDROP_CLASS = "tippy-backdrop";
+  var ARROW_CLASS = "tippy-arrow";
+  var SVG_ARROW_CLASS = "tippy-svg-arrow";
+  var POPPER_SELECTOR = "." + POPPER_CLASS;
+  var TOOLTIP_SELECTOR = "." + TOOLTIP_CLASS;
+  var CONTENT_SELECTOR = "." + CONTENT_CLASS;
+  var BACKDROP_SELECTOR = "." + BACKDROP_CLASS;
+  var ARROW_SELECTOR = "." + ARROW_CLASS;
+  var SVG_ARROW_SELECTOR = "." + SVG_ARROW_CLASS; // TODO: Work out best way to make these updateable
+
+  var currentInput = {
+    isTouch: false
+  };
+  var lastMouseMoveTime = 0;
+  /**
+   * When a `touchstart` event is fired, it's assumed the user is using touch
+   * input. We'll bind a `mousemove` event listener to listen for mouse input in
+   * the future. This way, the `isTouch` property is fully dynamic and will handle
+   * hybrid devices that use a mix of touch + mouse input.
+   */
+
+  function onDocumentTouchStart() {
+    if (currentInput.isTouch) {
+      return;
+    }
+
+    currentInput.isTouch = true;
+
+    if (isIOS) {
+      document.body.classList.add(IOS_CLASS);
+    }
+
+    if (window.performance) {
+      document.addEventListener('mousemove', onDocumentMouseMove);
+    }
+  }
+  /**
+   * When two `mousemove` event are fired consecutively within 20ms, it's assumed
+   * the user is using mouse input again. `mousemove` can fire on touch devices as
+   * well, but very rarely that quickly.
+   */
+
+  function onDocumentMouseMove() {
+    var now = performance.now();
+
+    if (now - lastMouseMoveTime < 20) {
+      currentInput.isTouch = false;
+      document.removeEventListener('mousemove', onDocumentMouseMove);
+
+      if (!isIOS) {
+        document.body.classList.remove(IOS_CLASS);
+      }
+    }
+
+    lastMouseMoveTime = now;
+  }
+  /**
+   * When an element is in focus and has a tippy, leaving the tab/window and
+   * returning causes it to show again. For mouse users this is unexpected, but
+   * for keyboard use it makes sense.
+   * TODO: find a better technique to solve this problem
+   */
+
+  function onWindowBlur() {
+    var _document = document,
+        activeElement = _document.activeElement;
+    var instance = activeElement._tippy;
+
+    if (activeElement && activeElement.blur && instance && !instance.state.isVisible) {
+      activeElement.blur();
+    }
+  }
+  /**
+   * Adds the needed global event listeners
+   */
+
+  function bindGlobalEventListeners() {
+    document.addEventListener('touchstart', onDocumentTouchStart, _extends$1({}, PASSIVE, {
+      capture: true
+    }));
+    window.addEventListener('blur', onWindowBlur);
+  }
+
+  var keys$2 = Object.keys(defaultProps);
+  /**
+   * Returns an object of optional props from data-tippy-* attributes
+   */
+
+  function getDataAttributeProps(reference) {
+    var props = keys$2.reduce(function (acc, key) {
+      var valueAsString = (reference.getAttribute("data-tippy-" + key) || '').trim();
+
+      if (!valueAsString) {
+        return acc;
+      }
+
+      if (key === 'content') {
+        acc[key] = valueAsString;
+      } else {
+        try {
+          acc[key] = JSON.parse(valueAsString);
+        } catch (e) {
+          acc[key] = valueAsString;
+        }
+      }
+
+      return acc;
+    }, {});
+    return props;
   }
 
   /**
-   * Performs a
-   * [`SameValueZero`](http://ecma-international.org/ecma-262/6.0/#sec-samevaluezero)
-   * comparison between two values to determine if they are equivalent.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to compare.
-   * @param {*} other The other value to compare.
-   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-   * @example
-   *
-   * var object = { 'user': 'fred' };
-   * var other = { 'user': 'fred' };
-   *
-   * _.eq(object, object);
-   * // => true
-   *
-   * _.eq(object, other);
-   * // => false
-   *
-   * _.eq('a', 'a');
-   * // => true
-   *
-   * _.eq('a', Object('a'));
-   * // => false
-   *
-   * _.eq(NaN, NaN);
-   * // => true
+   * Determines if the value is a reference element
    */
-  function eq(value, other) {
-    return value === other || (value !== value && other !== other);
+
+  function isReferenceElement(value) {
+    return !!(value && value._tippy && !value.classList.contains(POPPER_CLASS));
+  }
+  /**
+   * Safe .hasOwnProperty check, for prototype-less objects
+   */
+
+  function hasOwnProperty$1(obj, key) {
+    return {}.hasOwnProperty.call(obj, key);
+  }
+  /**
+   * Returns an array of elements based on the value
+   */
+
+  function getArrayOfElements(value) {
+    if (isRealElement(value)) {
+      return [value];
+    }
+
+    if (value instanceof NodeList) {
+      return arrayFrom(value);
+    }
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    return arrayFrom(document.querySelectorAll(value));
+  }
+  /**
+   * Returns a value at a given index depending on if it's an array or number
+   */
+
+  function getValueAtIndexOrReturn(value, index, defaultValue) {
+    if (Array.isArray(value)) {
+      var v = value[index];
+      return v == null ? Array.isArray(defaultValue) ? defaultValue[index] : defaultValue : v;
+    }
+
+    return value;
+  }
+  /**
+   * Prevents errors from being thrown while accessing nested modifier objects
+   * in `popperOptions`
+   */
+
+  function getModifier(obj, key) {
+    return obj && obj.modifiers && obj.modifiers[key];
+  }
+  /**
+   * Determines if the value is a real element
+   */
+
+  function isRealElement(value) {
+    return value instanceof Element;
+  }
+  /**
+   * Firefox extensions don't allow setting .innerHTML directly, this will trick
+   * it
+   */
+
+  function innerHTML() {
+    return 'innerHTML';
+  }
+  /**
+   * Evaluates a function if one, or returns the value
+   */
+
+  function invokeWithArgsOrReturn(value, args) {
+    return typeof value === 'function' ? value.apply(null, args) : value;
+  }
+  /**
+   * Sets a popperInstance `flip` modifier's enabled state
+   */
+
+  function setFlipModifierEnabled(modifiers, value) {
+    modifiers.filter(function (m) {
+      return m.name === 'flip';
+    })[0].enabled = value;
+  }
+  /**
+   * Returns a new `div` element
+   */
+
+  function div() {
+    return document.createElement('div');
+  }
+  /**
+   * Applies a transition duration to a list of elements
+   */
+
+  function setTransitionDuration(els, value) {
+    els.forEach(function (el) {
+      if (el) {
+        el.style.transitionDuration = value + "ms";
+      }
+    });
+  }
+  /**
+   * Sets the visibility state to elements so they can begin to transition
+   */
+
+  function setVisibilityState(els, state) {
+    els.forEach(function (el) {
+      if (el) {
+        el.setAttribute('data-state', state);
+      }
+    });
+  }
+  /**
+   * Evaluates the props object by merging data attributes and disabling
+   * conflicting props where necessary
+   */
+
+  function evaluateProps(reference, props) {
+    var out = _extends$1({}, props, {
+      content: invokeWithArgsOrReturn(props.content, [reference])
+    }, props.ignoreAttributes ? {} : getDataAttributeProps(reference));
+
+    if (out.animateFill) {
+      out.arrow = false;
+    }
+
+    if (out.arrow || isUCBrowser) {
+      out.animateFill = false;
+    }
+
+    return out;
+  }
+  /**
+   * Debounce utility. To avoid bloating bundle size, we're only passing 1
+   * argument here, a more generic function would pass all arguments. Only
+   * `onMouseMove` uses this which takes the event object for now.
+   */
+
+  function debounce(fn, ms) {
+    // Avoid wrapping in `setTimeout` if ms is 0 anyway
+    if (ms === 0) {
+      return fn;
+    }
+
+    var timeout;
+    return function (arg) {
+      clearTimeout(timeout);
+      timeout = setTimeout(function () {
+        fn(arg);
+      }, ms);
+    };
+  }
+  /**
+   * Preserves the original function invocation when another function replaces it
+   */
+
+  function preserveInvocation(originalFn, currentFn, args) {
+    if (originalFn && originalFn !== currentFn) {
+      originalFn.apply(null, args);
+    }
+  }
+  /**
+   * Ponyfill for Array.from - converts iterable values to an array
+   */
+
+  function arrayFrom(value) {
+    return [].slice.call(value);
+  }
+  /**
+   * Works like Element.prototype.closest, but uses a callback instead
+   */
+
+  function closestCallback(element, callback) {
+    while (element) {
+      if (callback(element)) {
+        return element;
+      }
+
+      element = element.parentElement;
+    }
+
+    return null;
+  }
+  /**
+   * Determines if an array or string includes a string
+   */
+
+  function includes(a, b) {
+    return a.indexOf(b) > -1;
   }
 
-  var lodash_zipobject = zipObject;
+  /**
+   * Sets the innerHTML of an element
+   */
+
+  function setInnerHTML(element, html) {
+    element[innerHTML()] = isRealElement(html) ? html[innerHTML()] : html;
+  }
+  /**
+   * Sets the content of a tooltip
+   */
+
+  function setContent(contentEl, props) {
+    if (isRealElement(props.content)) {
+      setInnerHTML(contentEl, '');
+      contentEl.appendChild(props.content);
+    } else if (typeof props.content !== 'function') {
+      var key = props.allowHTML ? 'innerHTML' : 'textContent';
+      contentEl[key] = props.content;
+    }
+  }
+  /**
+   * Returns the child elements of a popper element
+   */
+
+  function getChildren(popper) {
+    return {
+      tooltip: popper.querySelector(TOOLTIP_SELECTOR),
+      backdrop: popper.querySelector(BACKDROP_SELECTOR),
+      content: popper.querySelector(CONTENT_SELECTOR),
+      arrow: popper.querySelector(ARROW_SELECTOR) || popper.querySelector(SVG_ARROW_SELECTOR)
+    };
+  }
+  /**
+   * Adds `data-inertia` attribute
+   */
+
+  function addInertia(tooltip) {
+    tooltip.setAttribute('data-inertia', '');
+  }
+  /**
+   * Removes `data-inertia` attribute
+   */
+
+  function removeInertia(tooltip) {
+    tooltip.removeAttribute('data-inertia');
+  }
+  /**
+   * Creates an arrow element and returns it
+   */
+
+  function createArrowElement(arrow) {
+    var arrowElement = div();
+
+    if (arrow === true) {
+      arrowElement.className = ARROW_CLASS;
+    } else {
+      arrowElement.className = SVG_ARROW_CLASS;
+
+      if (isRealElement(arrow)) {
+        arrowElement.appendChild(arrow);
+      } else {
+        setInnerHTML(arrowElement, arrow === 'round' ? ROUND_ARROW_INNER_HTML : arrow);
+      }
+    }
+
+    return arrowElement;
+  }
+  /**
+   * Creates a backdrop element and returns it
+   */
+
+  function createBackdropElement(isVisible) {
+    var backdrop = div();
+    backdrop.className = BACKDROP_CLASS;
+    backdrop.setAttribute('data-state', isVisible ? 'visible' : 'hidden');
+    return backdrop;
+  }
+  /**
+   * Adds interactive-related attributes
+   */
+
+  function addInteractive(tooltip) {
+    tooltip.setAttribute('data-interactive', '');
+  }
+  /**
+   * Removes interactive-related attributes
+   */
+
+  function removeInteractive(tooltip) {
+    tooltip.removeAttribute('data-interactive');
+  }
+  /**
+   * Add/remove transitionend listener from tooltip
+   */
+
+  function updateTransitionEndListener(tooltip, action, listener) {
+    var eventName = isUCBrowser && document.body.style.webkitTransition !== undefined ? 'webkitTransitionEnd' : 'transitionend';
+    tooltip[action + 'EventListener'](eventName, listener);
+  }
+  /**
+   * Returns the popper's placement, ignoring shifting (top-start, etc)
+   */
+
+  function getBasePlacement(placement) {
+    return placement.split('-')[0];
+  }
+  /**
+   * Triggers reflow
+   */
+
+  function reflow(popper) {
+    void popper.offsetHeight;
+  }
+  /**
+   * Adds/removes theme from tooltip's classList
+   */
+
+  function updateTheme(tooltip, action, theme) {
+    theme.split(' ').forEach(function (name) {
+      if (name) {
+        tooltip.classList[action](name + "-theme");
+      }
+    });
+  }
+  /**
+   * Constructs the popper element and returns it
+   */
+
+  function createPopperElement(id, props) {
+    var popper = div();
+    popper.className = POPPER_CLASS;
+    popper.style.position = 'absolute';
+    popper.style.top = '0';
+    popper.style.left = '0';
+    var tooltip = div();
+    tooltip.className = TOOLTIP_CLASS;
+    tooltip.id = "tippy-" + id;
+    tooltip.setAttribute('data-state', 'hidden');
+    tooltip.setAttribute('tabindex', '-1');
+    updateTheme(tooltip, 'add', props.theme);
+    var content = div();
+    content.className = CONTENT_CLASS;
+    content.setAttribute('data-state', 'hidden');
+
+    if (props.interactive) {
+      addInteractive(tooltip);
+    }
+
+    if (props.arrow) {
+      tooltip.setAttribute('data-arrow', '');
+      tooltip.appendChild(createArrowElement(props.arrow));
+    }
+
+    if (props.animateFill) {
+      tooltip.appendChild(createBackdropElement(false));
+      tooltip.setAttribute('data-animatefill', '');
+    }
+
+    if (props.inertia) {
+      addInertia(tooltip);
+    }
+
+    setContent(content, props);
+    tooltip.appendChild(content);
+    popper.appendChild(tooltip);
+    updatePopperElement(popper, props, props, false);
+    return popper;
+  }
+  /**
+   * Updates the popper element based on the new props
+   */
+
+  function updatePopperElement(popper, prevProps, nextProps, isVisible) {
+    var _getChildren = getChildren(popper),
+        tooltip = _getChildren.tooltip,
+        content = _getChildren.content,
+        backdrop = _getChildren.backdrop,
+        arrow = _getChildren.arrow;
+
+    popper.style.zIndex = '' + nextProps.zIndex;
+    tooltip.setAttribute('data-animation', nextProps.animation);
+    tooltip.style.maxWidth = nextProps.maxWidth + (typeof nextProps.maxWidth === 'number' ? 'px' : '');
+
+    if (nextProps.role) {
+      tooltip.setAttribute('role', nextProps.role);
+    } else {
+      tooltip.removeAttribute('role');
+    }
+
+    if (prevProps.content !== nextProps.content) {
+      setContent(content, nextProps);
+    } // animateFill
+
+
+    if (!prevProps.animateFill && nextProps.animateFill) {
+      tooltip.appendChild(createBackdropElement(isVisible));
+      tooltip.setAttribute('data-animatefill', '');
+    } else if (prevProps.animateFill && !nextProps.animateFill) {
+      tooltip.removeChild(backdrop);
+      tooltip.removeAttribute('data-animatefill');
+    } // arrow
+
+
+    if (!prevProps.arrow && nextProps.arrow) {
+      // false to true
+      tooltip.appendChild(createArrowElement(nextProps.arrow));
+      tooltip.setAttribute('data-arrow', '');
+    } else if (prevProps.arrow && !nextProps.arrow) {
+      // true to false
+      tooltip.removeChild(arrow);
+      tooltip.removeAttribute('data-arrow');
+    } else if (prevProps.arrow !== nextProps.arrow) {
+      // true to 'round' or vice-versa
+      tooltip.removeChild(arrow);
+      tooltip.appendChild(createArrowElement(nextProps.arrow));
+    } // interactive
+
+
+    if (!prevProps.interactive && nextProps.interactive) {
+      addInteractive(tooltip);
+    } else if (prevProps.interactive && !nextProps.interactive) {
+      removeInteractive(tooltip);
+    } // inertia
+
+
+    if (!prevProps.inertia && nextProps.inertia) {
+      addInertia(tooltip);
+    } else if (prevProps.inertia && !nextProps.inertia) {
+      removeInertia(tooltip);
+    } // theme
+
+
+    if (prevProps.theme !== nextProps.theme) {
+      updateTheme(tooltip, 'remove', prevProps.theme);
+      updateTheme(tooltip, 'add', nextProps.theme);
+    }
+  }
+  /**
+   * Determines if the mouse cursor is outside of the popper's interactive border
+   * region
+   */
+
+  function isCursorOutsideInteractiveBorder(popperPlacement, popperRect, event, props) {
+    if (!popperPlacement) {
+      return true;
+    }
+
+    var x = event.clientX,
+        y = event.clientY;
+    var interactiveBorder = props.interactiveBorder,
+        distance = props.distance;
+    var exceedsTop = popperRect.top - y > (popperPlacement === 'top' ? interactiveBorder + distance : interactiveBorder);
+    var exceedsBottom = y - popperRect.bottom > (popperPlacement === 'bottom' ? interactiveBorder + distance : interactiveBorder);
+    var exceedsLeft = popperRect.left - x > (popperPlacement === 'left' ? interactiveBorder + distance : interactiveBorder);
+    var exceedsRight = x - popperRect.right > (popperPlacement === 'right' ? interactiveBorder + distance : interactiveBorder);
+    return exceedsTop || exceedsBottom || exceedsLeft || exceedsRight;
+  }
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
@@ -386,12 +2148,12 @@
    * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    * SOFTWARE.
    */
-  var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+  var isBrowser$1 = typeof window !== 'undefined' && typeof document !== 'undefined';
 
   var longerTimeoutBrowsers = ['Edge', 'Trident', 'Firefox'];
   var timeoutDuration = 0;
   for (var i = 0; i < longerTimeoutBrowsers.length; i += 1) {
-    if (isBrowser && navigator.userAgent.indexOf(longerTimeoutBrowsers[i]) >= 0) {
+    if (isBrowser$1 && navigator.userAgent.indexOf(longerTimeoutBrowsers[i]) >= 0) {
       timeoutDuration = 1;
       break;
     }
@@ -424,7 +2186,7 @@
     };
   }
 
-  var supportsMicroTasks = isBrowser && window.Promise;
+  var supportsMicroTasks = isBrowser$1 && window.Promise;
 
   /**
   * Create a debounced version of a method, that's asynchronously deferred
@@ -435,7 +2197,7 @@
   * @argument {Function} fn
   * @returns {Function}
   */
-  var debounce = supportsMicroTasks ? microtaskDebounce : taskDebounce;
+  var debounce$1 = supportsMicroTasks ? microtaskDebounce : taskDebounce;
 
   /**
    * Check if the given variable is a function
@@ -515,8 +2277,8 @@
     return getScrollParent(getParentNode(element));
   }
 
-  var isIE11 = isBrowser && !!(window.MSInputMethodContext && document.documentMode);
-  var isIE10 = isBrowser && /MSIE 10/.test(navigator.userAgent);
+  var isIE11 = isBrowser$1 && !!(window.MSInputMethodContext && document.documentMode);
+  var isIE10 = isBrowser$1 && /MSIE 10/.test(navigator.userAgent);
 
   /**
    * Determines if the browser is Internet Explorer
@@ -525,7 +2287,7 @@
    * @param {Number} version to check
    * @returns {Boolean} isIE
    */
-  function isIE(version) {
+  function isIE$1(version) {
     if (version === 11) {
       return isIE11;
     }
@@ -547,7 +2309,7 @@
       return document.documentElement;
     }
 
-    var noOffsetParent = isIE(10) ? document.body : null;
+    var noOffsetParent = isIE$1(10) ? document.body : null;
 
     // NOTE: 1 DOM access here
     var offsetParent = element.offsetParent || null;
@@ -702,13 +2464,13 @@
   }
 
   function getSize(axis, body, html, computedStyle) {
-    return Math.max(body['offset' + axis], body['scroll' + axis], html['client' + axis], html['offset' + axis], html['scroll' + axis], isIE(10) ? parseInt(html['offset' + axis]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Top' : 'Left')]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Bottom' : 'Right')]) : 0);
+    return Math.max(body['offset' + axis], body['scroll' + axis], html['client' + axis], html['offset' + axis], html['scroll' + axis], isIE$1(10) ? parseInt(html['offset' + axis]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Top' : 'Left')]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Bottom' : 'Right')]) : 0);
   }
 
   function getWindowSizes(document) {
     var body = document.body;
     var html = document.documentElement;
-    var computedStyle = isIE(10) && getComputedStyle(html);
+    var computedStyle = isIE$1(10) && getComputedStyle(html);
 
     return {
       height: getSize('Height', body, html, computedStyle),
@@ -744,7 +2506,7 @@
 
 
 
-  var defineProperty = function (obj, key, value) {
+  var defineProperty$1 = function (obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -759,7 +2521,7 @@
     return obj;
   };
 
-  var _extends$1 = Object.assign || function (target) {
+  var _extends$2 = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -781,7 +2543,7 @@
    * @returns {Object} ClientRect like output
    */
   function getClientRect(offsets) {
-    return _extends$1({}, offsets, {
+    return _extends$2({}, offsets, {
       right: offsets.left + offsets.width,
       bottom: offsets.top + offsets.height
     });
@@ -801,7 +2563,7 @@
     // considered in DOM in some circumstances...
     // This isn't reproducible in IE10 compatibility mode of IE11
     try {
-      if (isIE(10)) {
+      if (isIE$1(10)) {
         rect = element.getBoundingClientRect();
         var scrollTop = getScroll(element, 'top');
         var scrollLeft = getScroll(element, 'left');
@@ -846,7 +2608,7 @@
   function getOffsetRectRelativeToArbitraryNode(children, parent) {
     var fixedPosition = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-    var isIE10 = isIE(10);
+    var isIE10 = isIE$1(10);
     var isHTML = parent.nodeName === 'HTML';
     var childrenRect = getBoundingClientRect(children);
     var parentRect = getBoundingClientRect(parent);
@@ -949,7 +2711,7 @@
 
   function getFixedPositionOffsetParent(element) {
     // This check is needed to avoid errors in case one of the elements isn't defined for any reason
-    if (!element || !element.parentElement || isIE()) {
+    if (!element || !element.parentElement || isIE$1()) {
       return document.documentElement;
     }
     var el = element.parentElement;
@@ -1069,7 +2831,7 @@
     };
 
     var sortedAreas = Object.keys(rects).map(function (key) {
-      return _extends$1({
+      return _extends$2({
         key: key
       }, rects[key], {
         area: getArea(rects[key])
@@ -1618,7 +3380,7 @@
     };
   }
 
-  var isFirefox = isBrowser && /Firefox/i.test(navigator.userAgent);
+  var isFirefox = isBrowser$1 && /Firefox/i.test(navigator.userAgent);
 
   /**
    * @function
@@ -1711,9 +3473,9 @@
     };
 
     // Update `data` attributes, styles and arrowStyles
-    data.attributes = _extends$1({}, attributes, data.attributes);
-    data.styles = _extends$1({}, styles, data.styles);
-    data.arrowStyles = _extends$1({}, data.offsets.arrow, data.arrowStyles);
+    data.attributes = _extends$2({}, attributes, data.attributes);
+    data.styles = _extends$2({}, styles, data.styles);
+    data.arrowStyles = _extends$2({}, data.offsets.arrow, data.arrowStyles);
 
     return data;
   }
@@ -1823,7 +3585,7 @@
     sideValue = Math.max(Math.min(popper[len] - arrowElementSize, sideValue), 0);
 
     data.arrowElement = arrowElement;
-    data.offsets.arrow = (_data$offsets$arrow = {}, defineProperty(_data$offsets$arrow, side, Math.round(sideValue)), defineProperty(_data$offsets$arrow, altSide, ''), _data$offsets$arrow);
+    data.offsets.arrow = (_data$offsets$arrow = {}, defineProperty$1(_data$offsets$arrow, side, Math.round(sideValue)), defineProperty$1(_data$offsets$arrow, altSide, ''), _data$offsets$arrow);
 
     return data;
   }
@@ -1993,7 +3755,7 @@
 
         // this object contains `position`, we want to preserve it along with
         // any additional property we may add in the future
-        data.offsets.popper = _extends$1({}, data.offsets.popper, getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement));
+        data.offsets.popper = _extends$2({}, data.offsets.popper, getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement));
 
         data = runModifiers(data.instance.modifiers, data, 'flip');
       }
@@ -2253,7 +4015,7 @@
         if (popper[placement] < boundaries[placement] && !options.escapeWithReference) {
           value = Math.max(popper[placement], boundaries[placement]);
         }
-        return defineProperty({}, placement, value);
+        return defineProperty$1({}, placement, value);
       },
       secondary: function secondary(placement) {
         var mainSide = placement === 'right' ? 'left' : 'top';
@@ -2261,13 +4023,13 @@
         if (popper[placement] > boundaries[placement] && !options.escapeWithReference) {
           value = Math.min(popper[mainSide], boundaries[placement] - (placement === 'right' ? popper.width : popper.height));
         }
-        return defineProperty({}, mainSide, value);
+        return defineProperty$1({}, mainSide, value);
       }
     };
 
     order.forEach(function (placement) {
       var side = ['left', 'top'].indexOf(placement) !== -1 ? 'primary' : 'secondary';
-      popper = _extends$1({}, popper, check[side](placement));
+      popper = _extends$2({}, popper, check[side](placement));
     });
 
     data.offsets.popper = popper;
@@ -2298,11 +4060,11 @@
       var measurement = isVertical ? 'width' : 'height';
 
       var shiftOffsets = {
-        start: defineProperty({}, side, reference[side]),
-        end: defineProperty({}, side, reference[side] + reference[measurement] - popper[measurement])
+        start: defineProperty$1({}, side, reference[side]),
+        end: defineProperty$1({}, side, reference[side] + reference[measurement] - popper[measurement])
       };
 
-      data.offsets.popper = _extends$1({}, popper, shiftOffsets[shiftvariation]);
+      data.offsets.popper = _extends$2({}, popper, shiftOffsets[shiftvariation]);
     }
 
     return data;
@@ -2831,10 +4593,10 @@
       };
 
       // make update() debounced, so that it only runs at most once-per-tick
-      this.update = debounce(this.update.bind(this));
+      this.update = debounce$1(this.update.bind(this));
 
       // with {} we create a new object with the options inside it
-      this.options = _extends$1({}, Popper.Defaults, options);
+      this.options = _extends$2({}, Popper.Defaults, options);
 
       // init state
       this.state = {
@@ -2849,13 +4611,13 @@
 
       // Deep merge modifiers options
       this.options.modifiers = {};
-      Object.keys(_extends$1({}, Popper.Defaults.modifiers, options.modifiers)).forEach(function (name) {
-        _this.options.modifiers[name] = _extends$1({}, Popper.Defaults.modifiers[name] || {}, options.modifiers ? options.modifiers[name] : {});
+      Object.keys(_extends$2({}, Popper.Defaults.modifiers, options.modifiers)).forEach(function (name) {
+        _this.options.modifiers[name] = _extends$2({}, Popper.Defaults.modifiers[name] || {}, options.modifiers ? options.modifiers[name] : {});
       });
 
       // Refactoring modifiers' list (Object => Array)
       this.modifiers = Object.keys(this.options.modifiers).map(function (name) {
-        return _extends$1({
+        return _extends$2({
           name: name
         }, _this.options.modifiers[name]);
       })
@@ -2965,765 +4727,12 @@
   Popper.Defaults = Defaults;
 
   /**!
-  * tippy.js v4.3.4
+  * tippy.js v5.0.0-beta.1
   * (c) 2017-2019 atomiks
   * MIT License
   */
 
-  var css = ".tippy-iOS{cursor:pointer!important;-webkit-tap-highlight-color:transparent}.tippy-popper{transition-timing-function:cubic-bezier(.165,.84,.44,1);max-width:calc(100% - 8px);pointer-events:none;outline:0}.tippy-popper[x-placement^=top] .tippy-backdrop{border-radius:40% 40% 0 0}.tippy-popper[x-placement^=top] .tippy-roundarrow{bottom:-7px;bottom:-6.5px;-webkit-transform-origin:50% 0;transform-origin:50% 0;margin:0 3px}.tippy-popper[x-placement^=top] .tippy-roundarrow svg{position:absolute;left:0;-webkit-transform:rotate(180deg);transform:rotate(180deg)}.tippy-popper[x-placement^=top] .tippy-arrow{border-top:8px solid #333;border-right:8px solid transparent;border-left:8px solid transparent;bottom:-7px;margin:0 3px;-webkit-transform-origin:50% 0;transform-origin:50% 0}.tippy-popper[x-placement^=top] .tippy-backdrop{-webkit-transform-origin:0 25%;transform-origin:0 25%}.tippy-popper[x-placement^=top] .tippy-backdrop[data-state=visible]{-webkit-transform:scale(1) translate(-50%,-55%);transform:scale(1) translate(-50%,-55%)}.tippy-popper[x-placement^=top] .tippy-backdrop[data-state=hidden]{-webkit-transform:scale(.2) translate(-50%,-45%);transform:scale(.2) translate(-50%,-45%);opacity:0}.tippy-popper[x-placement^=top] [data-animation=shift-toward][data-state=visible]{-webkit-transform:translateY(-10px);transform:translateY(-10px)}.tippy-popper[x-placement^=top] [data-animation=shift-toward][data-state=hidden]{opacity:0;-webkit-transform:translateY(-20px);transform:translateY(-20px)}.tippy-popper[x-placement^=top] [data-animation=perspective]{-webkit-transform-origin:bottom;transform-origin:bottom}.tippy-popper[x-placement^=top] [data-animation=perspective][data-state=visible]{-webkit-transform:perspective(700px) translateY(-10px) rotateX(0);transform:perspective(700px) translateY(-10px) rotateX(0)}.tippy-popper[x-placement^=top] [data-animation=perspective][data-state=hidden]{opacity:0;-webkit-transform:perspective(700px) translateY(0) rotateX(60deg);transform:perspective(700px) translateY(0) rotateX(60deg)}.tippy-popper[x-placement^=top] [data-animation=fade][data-state=visible]{-webkit-transform:translateY(-10px);transform:translateY(-10px)}.tippy-popper[x-placement^=top] [data-animation=fade][data-state=hidden]{opacity:0;-webkit-transform:translateY(-10px);transform:translateY(-10px)}.tippy-popper[x-placement^=top] [data-animation=shift-away][data-state=visible]{-webkit-transform:translateY(-10px);transform:translateY(-10px)}.tippy-popper[x-placement^=top] [data-animation=shift-away][data-state=hidden]{opacity:0;-webkit-transform:translateY(0);transform:translateY(0)}.tippy-popper[x-placement^=top] [data-animation=scale]{-webkit-transform-origin:bottom;transform-origin:bottom}.tippy-popper[x-placement^=top] [data-animation=scale][data-state=visible]{-webkit-transform:translateY(-10px) scale(1);transform:translateY(-10px) scale(1)}.tippy-popper[x-placement^=top] [data-animation=scale][data-state=hidden]{opacity:0;-webkit-transform:translateY(-10px) scale(.5);transform:translateY(-10px) scale(.5)}.tippy-popper[x-placement^=bottom] .tippy-backdrop{border-radius:0 0 30% 30%}.tippy-popper[x-placement^=bottom] .tippy-roundarrow{top:-7px;-webkit-transform-origin:50% 100%;transform-origin:50% 100%;margin:0 3px}.tippy-popper[x-placement^=bottom] .tippy-roundarrow svg{position:absolute;left:0;-webkit-transform:rotate(0);transform:rotate(0)}.tippy-popper[x-placement^=bottom] .tippy-arrow{border-bottom:8px solid #333;border-right:8px solid transparent;border-left:8px solid transparent;top:-7px;margin:0 3px;-webkit-transform-origin:50% 100%;transform-origin:50% 100%}.tippy-popper[x-placement^=bottom] .tippy-backdrop{-webkit-transform-origin:0 -50%;transform-origin:0 -50%}.tippy-popper[x-placement^=bottom] .tippy-backdrop[data-state=visible]{-webkit-transform:scale(1) translate(-50%,-45%);transform:scale(1) translate(-50%,-45%)}.tippy-popper[x-placement^=bottom] .tippy-backdrop[data-state=hidden]{-webkit-transform:scale(.2) translate(-50%);transform:scale(.2) translate(-50%);opacity:0}.tippy-popper[x-placement^=bottom] [data-animation=shift-toward][data-state=visible]{-webkit-transform:translateY(10px);transform:translateY(10px)}.tippy-popper[x-placement^=bottom] [data-animation=shift-toward][data-state=hidden]{opacity:0;-webkit-transform:translateY(20px);transform:translateY(20px)}.tippy-popper[x-placement^=bottom] [data-animation=perspective]{-webkit-transform-origin:top;transform-origin:top}.tippy-popper[x-placement^=bottom] [data-animation=perspective][data-state=visible]{-webkit-transform:perspective(700px) translateY(10px) rotateX(0);transform:perspective(700px) translateY(10px) rotateX(0)}.tippy-popper[x-placement^=bottom] [data-animation=perspective][data-state=hidden]{opacity:0;-webkit-transform:perspective(700px) translateY(0) rotateX(-60deg);transform:perspective(700px) translateY(0) rotateX(-60deg)}.tippy-popper[x-placement^=bottom] [data-animation=fade][data-state=visible]{-webkit-transform:translateY(10px);transform:translateY(10px)}.tippy-popper[x-placement^=bottom] [data-animation=fade][data-state=hidden]{opacity:0;-webkit-transform:translateY(10px);transform:translateY(10px)}.tippy-popper[x-placement^=bottom] [data-animation=shift-away][data-state=visible]{-webkit-transform:translateY(10px);transform:translateY(10px)}.tippy-popper[x-placement^=bottom] [data-animation=shift-away][data-state=hidden]{opacity:0;-webkit-transform:translateY(0);transform:translateY(0)}.tippy-popper[x-placement^=bottom] [data-animation=scale]{-webkit-transform-origin:top;transform-origin:top}.tippy-popper[x-placement^=bottom] [data-animation=scale][data-state=visible]{-webkit-transform:translateY(10px) scale(1);transform:translateY(10px) scale(1)}.tippy-popper[x-placement^=bottom] [data-animation=scale][data-state=hidden]{opacity:0;-webkit-transform:translateY(10px) scale(.5);transform:translateY(10px) scale(.5)}.tippy-popper[x-placement^=left] .tippy-backdrop{border-radius:50% 0 0 50%}.tippy-popper[x-placement^=left] .tippy-roundarrow{right:-12px;-webkit-transform-origin:33.33333333% 50%;transform-origin:33.33333333% 50%;margin:3px 0}.tippy-popper[x-placement^=left] .tippy-roundarrow svg{position:absolute;left:0;-webkit-transform:rotate(90deg);transform:rotate(90deg)}.tippy-popper[x-placement^=left] .tippy-arrow{border-left:8px solid #333;border-top:8px solid transparent;border-bottom:8px solid transparent;right:-7px;margin:3px 0;-webkit-transform-origin:0 50%;transform-origin:0 50%}.tippy-popper[x-placement^=left] .tippy-backdrop{-webkit-transform-origin:50% 0;transform-origin:50% 0}.tippy-popper[x-placement^=left] .tippy-backdrop[data-state=visible]{-webkit-transform:scale(1) translate(-50%,-50%);transform:scale(1) translate(-50%,-50%)}.tippy-popper[x-placement^=left] .tippy-backdrop[data-state=hidden]{-webkit-transform:scale(.2) translate(-75%,-50%);transform:scale(.2) translate(-75%,-50%);opacity:0}.tippy-popper[x-placement^=left] [data-animation=shift-toward][data-state=visible]{-webkit-transform:translateX(-10px);transform:translateX(-10px)}.tippy-popper[x-placement^=left] [data-animation=shift-toward][data-state=hidden]{opacity:0;-webkit-transform:translateX(-20px);transform:translateX(-20px)}.tippy-popper[x-placement^=left] [data-animation=perspective]{-webkit-transform-origin:right;transform-origin:right}.tippy-popper[x-placement^=left] [data-animation=perspective][data-state=visible]{-webkit-transform:perspective(700px) translateX(-10px) rotateY(0);transform:perspective(700px) translateX(-10px) rotateY(0)}.tippy-popper[x-placement^=left] [data-animation=perspective][data-state=hidden]{opacity:0;-webkit-transform:perspective(700px) translateX(0) rotateY(-60deg);transform:perspective(700px) translateX(0) rotateY(-60deg)}.tippy-popper[x-placement^=left] [data-animation=fade][data-state=visible]{-webkit-transform:translateX(-10px);transform:translateX(-10px)}.tippy-popper[x-placement^=left] [data-animation=fade][data-state=hidden]{opacity:0;-webkit-transform:translateX(-10px);transform:translateX(-10px)}.tippy-popper[x-placement^=left] [data-animation=shift-away][data-state=visible]{-webkit-transform:translateX(-10px);transform:translateX(-10px)}.tippy-popper[x-placement^=left] [data-animation=shift-away][data-state=hidden]{opacity:0;-webkit-transform:translateX(0);transform:translateX(0)}.tippy-popper[x-placement^=left] [data-animation=scale]{-webkit-transform-origin:right;transform-origin:right}.tippy-popper[x-placement^=left] [data-animation=scale][data-state=visible]{-webkit-transform:translateX(-10px) scale(1);transform:translateX(-10px) scale(1)}.tippy-popper[x-placement^=left] [data-animation=scale][data-state=hidden]{opacity:0;-webkit-transform:translateX(-10px) scale(.5);transform:translateX(-10px) scale(.5)}.tippy-popper[x-placement^=right] .tippy-backdrop{border-radius:0 50% 50% 0}.tippy-popper[x-placement^=right] .tippy-roundarrow{left:-12px;-webkit-transform-origin:66.66666666% 50%;transform-origin:66.66666666% 50%;margin:3px 0}.tippy-popper[x-placement^=right] .tippy-roundarrow svg{position:absolute;left:0;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}.tippy-popper[x-placement^=right] .tippy-arrow{border-right:8px solid #333;border-top:8px solid transparent;border-bottom:8px solid transparent;left:-7px;margin:3px 0;-webkit-transform-origin:100% 50%;transform-origin:100% 50%}.tippy-popper[x-placement^=right] .tippy-backdrop{-webkit-transform-origin:-50% 0;transform-origin:-50% 0}.tippy-popper[x-placement^=right] .tippy-backdrop[data-state=visible]{-webkit-transform:scale(1) translate(-50%,-50%);transform:scale(1) translate(-50%,-50%)}.tippy-popper[x-placement^=right] .tippy-backdrop[data-state=hidden]{-webkit-transform:scale(.2) translate(-25%,-50%);transform:scale(.2) translate(-25%,-50%);opacity:0}.tippy-popper[x-placement^=right] [data-animation=shift-toward][data-state=visible]{-webkit-transform:translateX(10px);transform:translateX(10px)}.tippy-popper[x-placement^=right] [data-animation=shift-toward][data-state=hidden]{opacity:0;-webkit-transform:translateX(20px);transform:translateX(20px)}.tippy-popper[x-placement^=right] [data-animation=perspective]{-webkit-transform-origin:left;transform-origin:left}.tippy-popper[x-placement^=right] [data-animation=perspective][data-state=visible]{-webkit-transform:perspective(700px) translateX(10px) rotateY(0);transform:perspective(700px) translateX(10px) rotateY(0)}.tippy-popper[x-placement^=right] [data-animation=perspective][data-state=hidden]{opacity:0;-webkit-transform:perspective(700px) translateX(0) rotateY(60deg);transform:perspective(700px) translateX(0) rotateY(60deg)}.tippy-popper[x-placement^=right] [data-animation=fade][data-state=visible]{-webkit-transform:translateX(10px);transform:translateX(10px)}.tippy-popper[x-placement^=right] [data-animation=fade][data-state=hidden]{opacity:0;-webkit-transform:translateX(10px);transform:translateX(10px)}.tippy-popper[x-placement^=right] [data-animation=shift-away][data-state=visible]{-webkit-transform:translateX(10px);transform:translateX(10px)}.tippy-popper[x-placement^=right] [data-animation=shift-away][data-state=hidden]{opacity:0;-webkit-transform:translateX(0);transform:translateX(0)}.tippy-popper[x-placement^=right] [data-animation=scale]{-webkit-transform-origin:left;transform-origin:left}.tippy-popper[x-placement^=right] [data-animation=scale][data-state=visible]{-webkit-transform:translateX(10px) scale(1);transform:translateX(10px) scale(1)}.tippy-popper[x-placement^=right] [data-animation=scale][data-state=hidden]{opacity:0;-webkit-transform:translateX(10px) scale(.5);transform:translateX(10px) scale(.5)}.tippy-tooltip{position:relative;color:#fff;border-radius:.25rem;font-size:.875rem;padding:.3125rem .5625rem;line-height:1.4;text-align:center;background-color:#333}.tippy-tooltip[data-size=small]{padding:.1875rem .375rem;font-size:.75rem}.tippy-tooltip[data-size=large]{padding:.375rem .75rem;font-size:1rem}.tippy-tooltip[data-animatefill]{overflow:hidden;background-color:transparent}.tippy-tooltip[data-interactive],.tippy-tooltip[data-interactive] .tippy-roundarrow path{pointer-events:auto}.tippy-tooltip[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-tooltip[data-inertia][data-state=hidden]{transition-timing-function:ease}.tippy-arrow,.tippy-roundarrow{position:absolute;width:0;height:0}.tippy-roundarrow{width:18px;height:7px;fill:#333;pointer-events:none}.tippy-backdrop{position:absolute;background-color:#333;border-radius:50%;width:calc(110% + 2rem);left:50%;top:50%;z-index:-1;transition:all cubic-bezier(.46,.1,.52,.98);-webkit-backface-visibility:hidden;backface-visibility:hidden}.tippy-backdrop:after{content:\"\";float:left;padding-top:100%}.tippy-backdrop+.tippy-content{transition-property:opacity;will-change:opacity}.tippy-backdrop+.tippy-content[data-state=visible]{opacity:1}.tippy-backdrop+.tippy-content[data-state=hidden]{opacity:0}";
-
-  function _extends$2() {
-    _extends$2 = Object.assign || function (target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
-        }
-      }
-
-      return target;
-    };
-
-    return _extends$2.apply(this, arguments);
-  }
-
-  var version = "4.3.4";
-
-  var isBrowser$1 = typeof window !== 'undefined' && typeof document !== 'undefined';
-  var ua = isBrowser$1 ? navigator.userAgent : '';
-  var isIE$1 = /MSIE |Trident\//.test(ua);
-  var isUCBrowser = /UCBrowser\//.test(ua);
-  var isIOS = isBrowser$1 && /iPhone|iPad|iPod/.test(navigator.platform) && !window.MSStream;
-
-  var defaultProps = {
-    a11y: true,
-    allowHTML: true,
-    animateFill: true,
-    animation: 'shift-away',
-    appendTo: function appendTo() {
-      return document.body;
-    },
-    aria: 'describedby',
-    arrow: false,
-    arrowType: 'sharp',
-    boundary: 'scrollParent',
-    content: '',
-    delay: 0,
-    distance: 10,
-    duration: [325, 275],
-    flip: true,
-    flipBehavior: 'flip',
-    flipOnUpdate: false,
-    followCursor: false,
-    hideOnClick: true,
-    ignoreAttributes: false,
-    inertia: false,
-    interactive: false,
-    interactiveBorder: 2,
-    interactiveDebounce: 0,
-    lazy: true,
-    maxWidth: 350,
-    multiple: false,
-    offset: 0,
-    onHidden: function onHidden() {},
-    onHide: function onHide() {},
-    onMount: function onMount() {},
-    onShow: function onShow() {},
-    onShown: function onShown() {},
-    onTrigger: function onTrigger() {},
-    placement: 'top',
-    popperOptions: {},
-    role: 'tooltip',
-    showOnInit: false,
-    size: 'regular',
-    sticky: false,
-    target: '',
-    theme: 'dark',
-    touch: true,
-    touchHold: false,
-    trigger: 'mouseenter focus',
-    triggerTarget: null,
-    updateDuration: 0,
-    wait: null,
-    zIndex: 9999
-    /**
-     * If the set() method encounters one of these, the popperInstance must be
-     * recreated
-     */
-
-  };
-  var POPPER_INSTANCE_DEPENDENCIES = ['arrow', 'arrowType', 'boundary', 'distance', 'flip', 'flipBehavior', 'flipOnUpdate', 'offset', 'placement', 'popperOptions'];
-
-  var elementProto = isBrowser$1 ? Element.prototype : {};
-  var matches = elementProto.matches || elementProto.matchesSelector || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
-  /**
-   * Ponyfill for Array.from - converts iterable values to an array
-   */
-
-  function arrayFrom(value) {
-    return [].slice.call(value);
-  }
-  /**
-   * Ponyfill for Element.prototype.closest
-   */
-
-  function closest(element, selector) {
-    return closestCallback(element, function (el) {
-      return matches.call(el, selector);
-    });
-  }
-  /**
-   * Works like Element.prototype.closest, but uses a callback instead
-   */
-
-  function closestCallback(element, callback) {
-    while (element) {
-      if (callback(element)) {
-        return element;
-      }
-
-      element = element.parentElement;
-    }
-
-    return null;
-  }
-
-  // Passive event listener config
-  var PASSIVE = {
-    passive: true // Popper `preventOverflow` padding
-
-  };
-  var PADDING = 4; // Popper attributes
-  // In Popper v2 these will be `data-*` instead of `x-*` to adhere to HTML5 spec
-
-  var PLACEMENT_ATTRIBUTE = 'x-placement';
-  var OUT_OF_BOUNDARIES_ATTRIBUTE = 'x-out-of-boundaries'; // Classes
-
-  var IOS_CLASS = "tippy-iOS";
-  var ACTIVE_CLASS = "tippy-active";
-  var POPPER_CLASS = "tippy-popper";
-  var TOOLTIP_CLASS = "tippy-tooltip";
-  var CONTENT_CLASS = "tippy-content";
-  var BACKDROP_CLASS = "tippy-backdrop";
-  var ARROW_CLASS = "tippy-arrow";
-  var ROUND_ARROW_CLASS = "tippy-roundarrow"; // Selectors
-
-  var POPPER_SELECTOR = ".".concat(POPPER_CLASS);
-  var TOOLTIP_SELECTOR = ".".concat(TOOLTIP_CLASS);
-  var CONTENT_SELECTOR = ".".concat(CONTENT_CLASS);
-  var BACKDROP_SELECTOR = ".".concat(BACKDROP_CLASS);
-  var ARROW_SELECTOR = ".".concat(ARROW_CLASS);
-  var ROUND_ARROW_SELECTOR = ".".concat(ROUND_ARROW_CLASS);
-
-  var isUsingTouch = false;
-  function onDocumentTouch() {
-    if (isUsingTouch) {
-      return;
-    }
-
-    isUsingTouch = true;
-
-    if (isIOS) {
-      document.body.classList.add(IOS_CLASS);
-    }
-
-    if (window.performance) {
-      document.addEventListener('mousemove', onDocumentMouseMove);
-    }
-  }
-  var lastMouseMoveTime = 0;
-  function onDocumentMouseMove() {
-    var now = performance.now(); // Chrome 60+ is 1 mousemove per animation frame, use 20ms time difference
-
-    if (now - lastMouseMoveTime < 20) {
-      isUsingTouch = false;
-      document.removeEventListener('mousemove', onDocumentMouseMove);
-
-      if (!isIOS) {
-        document.body.classList.remove(IOS_CLASS);
-      }
-    }
-
-    lastMouseMoveTime = now;
-  }
-  function onWindowBlur() {
-    var _document = document,
-        activeElement = _document.activeElement;
-
-    if (activeElement && activeElement.blur && activeElement._tippy) {
-      activeElement.blur();
-    }
-  }
-  /**
-   * Adds the needed global event listeners
-   */
-
-  function bindGlobalEventListeners() {
-    document.addEventListener('touchstart', onDocumentTouch, PASSIVE);
-    window.addEventListener('blur', onWindowBlur);
-  }
-
-  var keys = Object.keys(defaultProps);
-  /**
-   * Returns an object of optional props from data-tippy-* attributes
-   */
-
-  function getDataAttributeOptions(reference) {
-    return keys.reduce(function (acc, key) {
-      var valueAsString = (reference.getAttribute("data-tippy-".concat(key)) || '').trim();
-
-      if (!valueAsString) {
-        return acc;
-      }
-
-      if (key === 'content') {
-        acc[key] = valueAsString;
-      } else {
-        try {
-          acc[key] = JSON.parse(valueAsString);
-        } catch (e) {
-          acc[key] = valueAsString;
-        }
-      }
-
-      return acc;
-    }, {});
-  }
-  /**
-   * Polyfills the virtual reference (plain object) with Element.prototype props
-   * Mutating because DOM elements are mutated, adds `_tippy` property
-   */
-
-  function polyfillElementPrototypeProperties(virtualReference) {
-    var polyfills = {
-      isVirtual: true,
-      attributes: virtualReference.attributes || {},
-      contains: function contains() {},
-      setAttribute: function setAttribute(key, value) {
-        virtualReference.attributes[key] = value;
-      },
-      getAttribute: function getAttribute(key) {
-        return virtualReference.attributes[key];
-      },
-      removeAttribute: function removeAttribute(key) {
-        delete virtualReference.attributes[key];
-      },
-      hasAttribute: function hasAttribute(key) {
-        return key in virtualReference.attributes;
-      },
-      addEventListener: function addEventListener() {},
-      removeEventListener: function removeEventListener() {},
-      classList: {
-        classNames: {},
-        add: function add(key) {
-          virtualReference.classList.classNames[key] = true;
-        },
-        remove: function remove(key) {
-          delete virtualReference.classList.classNames[key];
-        },
-        contains: function contains(key) {
-          return key in virtualReference.classList.classNames;
-        }
-      }
-    };
-
-    for (var key in polyfills) {
-      virtualReference[key] = polyfills[key];
-    }
-  }
-
-  /**
-   * Determines if a value is a "bare" virtual element (before mutations done
-   * by `polyfillElementPrototypeProperties()`). JSDOM elements show up as
-   * [object Object], we can check if the value is "element-like" if it has
-   * `addEventListener`
-   */
-
-  function isBareVirtualElement(value) {
-    return {}.toString.call(value) === '[object Object]' && !value.addEventListener;
-  }
-  /**
-   * Determines if the value is a reference element
-   */
-
-  function isReferenceElement(value) {
-    return !!value._tippy && !matches.call(value, POPPER_SELECTOR);
-  }
-  /**
-   * Safe .hasOwnProperty check, for prototype-less objects
-   */
-
-  function hasOwnProperty$1(obj, key) {
-    return {}.hasOwnProperty.call(obj, key);
-  }
-  /**
-   * Returns an array of elements based on the value
-   */
-
-  function getArrayOfElements(value) {
-    if (isSingular(value)) {
-      // TODO: VirtualReference is not compatible to type Element
-      return [value];
-    }
-
-    if (value instanceof NodeList) {
-      return arrayFrom(value);
-    }
-
-    if (Array.isArray(value)) {
-      return value;
-    }
-
-    try {
-      return arrayFrom(document.querySelectorAll(value));
-    } catch (e) {
-      return [];
-    }
-  }
-  /**
-   * Returns a value at a given index depending on if it's an array or number
-   */
-
-  function getValue(value, index, defaultValue) {
-    if (Array.isArray(value)) {
-      var v = value[index];
-      return v == null ? defaultValue : v;
-    }
-
-    return value;
-  }
-  /**
-   * Debounce utility. To avoid bloating bundle size, we're only passing 1
-   * argument here, a more generic function would pass all arguments. Only
-   * `onMouseMove` uses this which takes the event object for now.
-   */
-
-  function debounce$1(fn, ms) {
-    // Avoid wrapping in `setTimeout` if ms is 0 anyway
-    if (ms === 0) {
-      return fn;
-    }
-
-    var timeout;
-    return function (arg) {
-      clearTimeout(timeout);
-      timeout = setTimeout(function () {
-        fn(arg);
-      }, ms);
-    };
-  }
-  /**
-   * Prevents errors from being thrown while accessing nested modifier objects
-   * in `popperOptions`
-   */
-
-  function getModifier(obj, key) {
-    return obj && obj.modifiers && obj.modifiers[key];
-  }
-  /**
-   * Determines if an array or string includes a value
-   */
-
-  function includes(a, b) {
-    return a.indexOf(b) > -1;
-  }
-  /**
-   * Determines if the value is a real element
-   */
-
-  function isRealElement(value) {
-    return value instanceof Element;
-  }
-  /**
-   * Determines if the value is singular-like
-   */
-
-  function isSingular(value) {
-    return !!(value && hasOwnProperty$1(value, 'isVirtual')) || isRealElement(value);
-  }
-  /**
-   * Firefox extensions don't allow setting .innerHTML directly, this will trick it
-   */
-
-  function innerHTML() {
-    return 'innerHTML';
-  }
-  /**
-   * Evaluates a function if one, or returns the value
-   */
-
-  function invokeWithArgsOrReturn(value, args) {
-    return typeof value === 'function' ? value.apply(null, args) : value;
-  }
-  /**
-   * Sets a popperInstance `flip` modifier's enabled state
-   */
-
-  function setFlipModifierEnabled(modifiers, value) {
-    modifiers.filter(function (m) {
-      return m.name === 'flip';
-    })[0].enabled = value;
-  }
-  /**
-   * Determines if an element can receive focus
-   * Always returns true for virtual objects
-   */
-
-  function canReceiveFocus(element) {
-    return isRealElement(element) ? matches.call(element, 'a[href],area[href],button,details,input,textarea,select,iframe,[tabindex]') && !element.hasAttribute('disabled') : true;
-  }
-  /**
-   * Returns a new `div` element
-   */
-
-  function div() {
-    return document.createElement('div');
-  }
-  /**
-   * Applies a transition duration to a list of elements
-   */
-
-  function setTransitionDuration(els, value) {
-    els.forEach(function (el) {
-      if (el) {
-        el.style.transitionDuration = "".concat(value, "ms");
-      }
-    });
-  }
-  /**
-   * Sets the visibility state to elements so they can begin to transition
-   */
-
-  function setVisibilityState(els, state) {
-    els.forEach(function (el) {
-      if (el) {
-        el.setAttribute('data-state', state);
-      }
-    });
-  }
-  /**
-   * Evaluates the props object by merging data attributes and
-   * disabling conflicting options where necessary
-   */
-
-  function evaluateProps(reference, props) {
-    var out = _extends$2({}, props, {
-      content: invokeWithArgsOrReturn(props.content, [reference])
-    }, props.ignoreAttributes ? {} : getDataAttributeOptions(reference));
-
-    if (out.arrow || isUCBrowser) {
-      out.animateFill = false;
-    }
-
-    return out;
-  }
-  /**
-   * Validates an object of options with the valid default props object
-   */
-
-  function validateOptions(options, defaultProps) {
-    Object.keys(options).forEach(function (option) {
-      if (!hasOwnProperty$1(defaultProps, option)) {
-        throw new Error("[tippy]: `".concat(option, "` is not a valid option"));
-      }
-    });
-  }
-
-  /**
-   * Sets the innerHTML of an element
-   */
-
-  function setInnerHTML(element, html) {
-    element[innerHTML()] = isRealElement(html) ? html[innerHTML()] : html;
-  }
-  /**
-   * Sets the content of a tooltip
-   */
-
-  function setContent(contentEl, props) {
-    if (isRealElement(props.content)) {
-      setInnerHTML(contentEl, '');
-      contentEl.appendChild(props.content);
-    } else if (typeof props.content !== 'function') {
-      var key = props.allowHTML ? 'innerHTML' : 'textContent';
-      contentEl[key] = props.content;
-    }
-  }
-  /**
-   * Returns the child elements of a popper element
-   */
-
-  function getChildren(popper) {
-    return {
-      tooltip: popper.querySelector(TOOLTIP_SELECTOR),
-      backdrop: popper.querySelector(BACKDROP_SELECTOR),
-      content: popper.querySelector(CONTENT_SELECTOR),
-      arrow: popper.querySelector(ARROW_SELECTOR) || popper.querySelector(ROUND_ARROW_SELECTOR)
-    };
-  }
-  /**
-   * Adds `data-inertia` attribute
-   */
-
-  function addInertia(tooltip) {
-    tooltip.setAttribute('data-inertia', '');
-  }
-  /**
-   * Removes `data-inertia` attribute
-   */
-
-  function removeInertia(tooltip) {
-    tooltip.removeAttribute('data-inertia');
-  }
-  /**
-   * Creates an arrow element and returns it
-   */
-
-  function createArrowElement(arrowType) {
-    var arrow = div();
-
-    if (arrowType === 'round') {
-      arrow.className = ROUND_ARROW_CLASS;
-      setInnerHTML(arrow, '<svg viewBox="0 0 18 7" xmlns="http://www.w3.org/2000/svg"><path d="M0 7s2.021-.015 5.253-4.218C6.584 1.051 7.797.007 9 0c1.203-.007 2.416 1.035 3.761 2.782C16.012 7.005 18 7 18 7H0z"/></svg>');
-    } else {
-      arrow.className = ARROW_CLASS;
-    }
-
-    return arrow;
-  }
-  /**
-   * Creates a backdrop element and returns it
-   */
-
-  function createBackdropElement() {
-    var backdrop = div();
-    backdrop.className = BACKDROP_CLASS;
-    backdrop.setAttribute('data-state', 'hidden');
-    return backdrop;
-  }
-  /**
-   * Adds interactive-related attributes
-   */
-
-  function addInteractive(popper, tooltip) {
-    popper.setAttribute('tabindex', '-1');
-    tooltip.setAttribute('data-interactive', '');
-  }
-  /**
-   * Removes interactive-related attributes
-   */
-
-  function removeInteractive(popper, tooltip) {
-    popper.removeAttribute('tabindex');
-    tooltip.removeAttribute('data-interactive');
-  }
-  /**
-   * Add/remove transitionend listener from tooltip
-   */
-
-  function updateTransitionEndListener(tooltip, action, listener) {
-    // UC Browser hasn't adopted the `transitionend` event despite supporting
-    // unprefixed transitions...
-    var eventName = isUCBrowser && document.body.style.webkitTransition !== undefined ? 'webkitTransitionEnd' : 'transitionend';
-    tooltip[action + 'EventListener'](eventName, listener);
-  }
-  /**
-   * Returns the popper's placement, ignoring shifting (top-start, etc)
-   */
-
-  function getBasicPlacement(popper) {
-    var fullPlacement = popper.getAttribute(PLACEMENT_ATTRIBUTE);
-    return fullPlacement ? fullPlacement.split('-')[0] : '';
-  }
-  /**
-   * Triggers reflow
-   */
-
-  function reflow(popper) {
-    void popper.offsetHeight;
-  }
-  /**
-   * Adds/removes theme from tooltip's classList
-   */
-
-  function updateTheme(tooltip, action, theme) {
-    theme.split(' ').forEach(function (themeName) {
-      tooltip.classList[action](themeName + '-theme');
-    });
-  }
-  /**
-   * Constructs the popper element and returns it
-   */
-
-  function createPopperElement(id, props) {
-    var popper = div();
-    popper.className = POPPER_CLASS;
-    popper.id = "tippy-".concat(id);
-    popper.style.zIndex = '' + props.zIndex;
-    popper.style.position = 'absolute';
-    popper.style.top = '0';
-    popper.style.left = '0';
-
-    if (props.role) {
-      popper.setAttribute('role', props.role);
-    }
-
-    var tooltip = div();
-    tooltip.className = TOOLTIP_CLASS;
-    tooltip.style.maxWidth = props.maxWidth + (typeof props.maxWidth === 'number' ? 'px' : '');
-    tooltip.setAttribute('data-size', props.size);
-    tooltip.setAttribute('data-animation', props.animation);
-    tooltip.setAttribute('data-state', 'hidden');
-    updateTheme(tooltip, 'add', props.theme);
-    var content = div();
-    content.className = CONTENT_CLASS;
-    content.setAttribute('data-state', 'hidden');
-
-    if (props.interactive) {
-      addInteractive(popper, tooltip);
-    }
-
-    if (props.arrow) {
-      tooltip.appendChild(createArrowElement(props.arrowType));
-    }
-
-    if (props.animateFill) {
-      tooltip.appendChild(createBackdropElement());
-      tooltip.setAttribute('data-animatefill', '');
-    }
-
-    if (props.inertia) {
-      addInertia(tooltip);
-    }
-
-    setContent(content, props);
-    tooltip.appendChild(content);
-    popper.appendChild(tooltip);
-    return popper;
-  }
-  /**
-   * Updates the popper element based on the new props
-   */
-
-  function updatePopperElement(popper, prevProps, nextProps) {
-    var _getChildren = getChildren(popper),
-        tooltip = _getChildren.tooltip,
-        content = _getChildren.content,
-        backdrop = _getChildren.backdrop,
-        arrow = _getChildren.arrow;
-
-    popper.style.zIndex = '' + nextProps.zIndex;
-    tooltip.setAttribute('data-size', nextProps.size);
-    tooltip.setAttribute('data-animation', nextProps.animation);
-    tooltip.style.maxWidth = nextProps.maxWidth + (typeof nextProps.maxWidth === 'number' ? 'px' : '');
-
-    if (nextProps.role) {
-      popper.setAttribute('role', nextProps.role);
-    } else {
-      popper.removeAttribute('role');
-    }
-
-    if (prevProps.content !== nextProps.content) {
-      setContent(content, nextProps);
-    } // animateFill
-
-
-    if (!prevProps.animateFill && nextProps.animateFill) {
-      tooltip.appendChild(createBackdropElement());
-      tooltip.setAttribute('data-animatefill', '');
-    } else if (prevProps.animateFill && !nextProps.animateFill) {
-      tooltip.removeChild(backdrop);
-      tooltip.removeAttribute('data-animatefill');
-    } // arrow
-
-
-    if (!prevProps.arrow && nextProps.arrow) {
-      tooltip.appendChild(createArrowElement(nextProps.arrowType));
-    } else if (prevProps.arrow && !nextProps.arrow) {
-      tooltip.removeChild(arrow);
-    } // arrowType
-
-
-    if (prevProps.arrow && nextProps.arrow && prevProps.arrowType !== nextProps.arrowType) {
-      tooltip.replaceChild(createArrowElement(nextProps.arrowType), arrow);
-    } // interactive
-
-
-    if (!prevProps.interactive && nextProps.interactive) {
-      addInteractive(popper, tooltip);
-    } else if (prevProps.interactive && !nextProps.interactive) {
-      removeInteractive(popper, tooltip);
-    } // inertia
-
-
-    if (!prevProps.inertia && nextProps.inertia) {
-      addInertia(tooltip);
-    } else if (prevProps.inertia && !nextProps.inertia) {
-      removeInertia(tooltip);
-    } // theme
-
-
-    if (prevProps.theme !== nextProps.theme) {
-      updateTheme(tooltip, 'remove', prevProps.theme);
-      updateTheme(tooltip, 'add', nextProps.theme);
-    }
-  }
-  /**
-   * Hides all visible poppers on the document
-   */
-
-  function hideAll() {
-    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        excludedReferenceOrInstance = _ref.exclude,
-        duration = _ref.duration;
-
-    arrayFrom(document.querySelectorAll(POPPER_SELECTOR)).forEach(function (popper) {
-      var instance = popper._tippy;
-
-      if (instance) {
-        var isExcluded = false;
-
-        if (excludedReferenceOrInstance) {
-          isExcluded = isReferenceElement(excludedReferenceOrInstance) ? instance.reference === excludedReferenceOrInstance : popper === excludedReferenceOrInstance.popper;
-        }
-
-        if (!isExcluded) {
-          instance.hide(duration);
-        }
-      }
-    });
-  }
-  /**
-   * Determines if the mouse cursor is outside of the popper's interactive border
-   * region
-   */
-
-  function isCursorOutsideInteractiveBorder(popperPlacement, popperRect, event, props) {
-    if (!popperPlacement) {
-      return true;
-    }
-
-    var x = event.clientX,
-        y = event.clientY;
-    var interactiveBorder = props.interactiveBorder,
-        distance = props.distance;
-    var exceedsTop = popperRect.top - y > (popperPlacement === 'top' ? interactiveBorder + distance : interactiveBorder);
-    var exceedsBottom = y - popperRect.bottom > (popperPlacement === 'bottom' ? interactiveBorder + distance : interactiveBorder);
-    var exceedsLeft = popperRect.left - x > (popperPlacement === 'left' ? interactiveBorder + distance : interactiveBorder);
-    var exceedsRight = x - popperRect.right > (popperPlacement === 'right' ? interactiveBorder + distance : interactiveBorder);
-    return exceedsTop || exceedsBottom || exceedsLeft || exceedsRight;
-  }
-  /**
-   * Returns the distance offset, taking into account the default offset due to
-   * the transform: translate() rule (10px) in CSS
-   */
-
-  function getOffsetDistanceInPx(distance) {
-    return -(distance - 10) + 'px';
-  }
+  var version = "5.0.0-beta.1";
 
   var idCounter = 1; // Workaround for IE11's lack of new MouseEvent constructor
 
@@ -3744,27 +4753,30 @@
 
 
     var lastTriggerEventType;
-    var lastMouseMoveEvent;
-    var showTimeoutId;
-    var hideTimeoutId;
-    var scheduleHideAnimationFrameId;
-    var isScheduledToShow = false;
+    var showTimeout;
+    var hideTimeout;
+    var scheduleHideAnimationFrame;
     var isBeingDestroyed = false;
-    var previousPlacement;
-    var wasVisibleDuringPreviousUpdate = false;
     var hasMountCallbackRun = false;
+    var didHideDueToDocumentMouseDown = false;
     var currentMountCallback;
     var currentTransitionEndListener;
     var listeners = [];
-    var currentComputedPadding;
-    var debouncedOnMouseMove = debounce$1(onMouseMove, props.interactiveDebounce);
+    var debouncedOnMouseMove = debounce(onMouseMove, props.interactiveDebounce);
     /* ======================= 🔑 Public members 🔑 ======================= */
 
     var id = idCounter++;
     var popper = createPopperElement(id, props);
     var popperChildren = getChildren(popper);
-    var popperInstance = null;
+    var popperInstance = null; // These two elements are static
+
+    var tooltip = popperChildren.tooltip,
+        content = popperChildren.content;
     var state = {
+      // The current real placement (`data-placement` attribute)
+      currentPlacement: props.placement,
+      // Does the instance have a pending timeout for show()?
+      isScheduledToShow: false,
       // Is the instance currently enabled?
       isEnabled: true,
       // Is the tippy currently showing and not transitioning out?
@@ -3787,40 +4799,34 @@
       state: state,
       // methods
       clearDelayTimeouts: clearDelayTimeouts,
-      set: set,
+      setProps: setProps,
       setContent: setContent,
       show: show,
       hide: hide,
       enable: enable,
       disable: disable,
       destroy: destroy
-      /* ==================== Initial instance mutations =================== */
-
     };
+    /* ==================== Initial instance mutations =================== */
+
+
     reference._tippy = instance;
     popper._tippy = instance;
-    addTriggersToReference();
+    addTriggersToEventListenersTarget();
 
     if (!props.lazy) {
       createPopperInstance();
     }
 
-    if (props.showOnInit) {
+    if (props.showOnCreate) {
       scheduleShow();
-    } // Ensure the event listeners target can receive focus
-
-
-    if (props.a11y && !props.target && !canReceiveFocus(getEventListenersTarget())) {
-      getEventListenersTarget().setAttribute('tabindex', '0');
     } // Prevent a tippy with a delay from hiding if the cursor left then returned
     // before it started hiding
 
 
-    popper.addEventListener('mouseenter', function (event) {
+    popper.addEventListener('mouseenter', function () {
       if (instance.props.interactive && instance.state.isVisible && lastTriggerEventType === 'mouseenter') {
-        // We don't want props.onTrigger() to be called here, since the `event`
-        // object is not related to the reference element
-        scheduleShow(event, true);
+        instance.clearDelayTimeouts();
       }
     });
     popper.addEventListener('mouseleave', function () {
@@ -3828,20 +4834,26 @@
         document.addEventListener('mousemove', debouncedOnMouseMove);
       }
     });
+    props.onCreate(instance);
     return instance;
     /* ======================= 🔒 Private methods 🔒 ======================= */
 
-    /**
-     * Removes the follow cursor listener
-     */
-
-    function removeFollowCursorListener() {
-      document.removeEventListener('mousemove', positionVirtualReferenceNearCursor);
+    function getNormalizedTouchSettings() {
+      var touch = instance.props.touch;
+      return Array.isArray(touch) ? touch : [touch, 0];
     }
-    /**
-     * Cleans up interactive mouse listeners
-     */
 
+    function getIsCustomTouchBehavior() {
+      return getNormalizedTouchSettings()[0] === 'hold';
+    }
+
+    function getTransitionableElements() {
+      return [tooltip, content, instance.popperChildren.backdrop];
+    }
+
+    function getEventListenersTarget() {
+      return instance.props.triggerTarget || reference;
+    }
 
     function cleanupInteractiveMouseListeners() {
       document.body.removeEventListener('mouseleave', scheduleHide);
@@ -3850,72 +4862,70 @@
         return listener !== debouncedOnMouseMove;
       });
     }
-    /**
-     * Returns correct target used for event listeners
-     */
+
+    function onDocumentMouseDown(event) {
+      // Clicked on interactive popper
+      if (instance.props.interactive && popper.contains(event.target)) {
+        return;
+      } // Clicked on the event listeners target
 
 
-    function getEventListenersTarget() {
-      return instance.props.triggerTarget || reference;
+      if (getEventListenersTarget().contains(event.target)) {
+        if (currentInput.isTouch) {
+          return;
+        }
+
+        if (instance.state.isVisible && includes(instance.props.trigger, 'click')) {
+          return;
+        }
+      }
+
+      if (instance.props.hideOnClick === true) {
+        instance.clearDelayTimeouts();
+        instance.hide(); // `mousedown` event is fired right before `focus`. This lets a tippy with
+        // `focus` trigger know that it should not show
+
+        didHideDueToDocumentMouseDown = true;
+        setTimeout(function () {
+          didHideDueToDocumentMouseDown = false;
+        }); // The listener gets added in `scheduleShow()`, but this may be hiding it
+        // before it shows, and hide()'s early bail-out behavior can prevent it
+        // from being cleaned up
+
+        if (!instance.state.isMounted) {
+          removeDocumentMouseDownListener();
+        }
+      }
     }
-    /**
-     * Adds the document click event listener for the instance
-     */
 
-
-    function addDocumentClickListener() {
-      document.addEventListener('click', onDocumentClick, true);
+    function addDocumentMouseDownListener() {
+      document.addEventListener('mousedown', onDocumentMouseDown, true);
     }
-    /**
-     * Removes the document click event listener for the instance
-     */
 
-
-    function removeDocumentClickListener() {
-      document.removeEventListener('click', onDocumentClick, true);
+    function removeDocumentMouseDownListener() {
+      document.removeEventListener('mousedown', onDocumentMouseDown, true);
     }
-    /**
-     * Returns transitionable inner elements used in show/hide methods
-     */
-
-
-    function getTransitionableElements() {
-      return [instance.popperChildren.tooltip, instance.popperChildren.backdrop, instance.popperChildren.content];
-    }
-    /**
-     * Determines if the instance is in `followCursor` mode.
-     * NOTE: in v5, touch devices will use `initial` behavior no matter the value.
-     */
-
-
-    function getIsInLooseFollowCursorMode() {
-      var followCursor = instance.props.followCursor;
-      return followCursor && lastTriggerEventType !== 'focus' || isUsingTouch && followCursor === 'initial';
-    }
-    /**
-     * Updates the tooltip's position on each animation frame
-     */
-
 
     function makeSticky() {
-      setTransitionDuration([popper], isIE$1 ? 0 : instance.props.updateDuration);
+      setTransitionDuration([popper], isIE ? 0 : instance.props.updateDuration);
+      var prevRefRect = reference.getBoundingClientRect();
 
       function updatePosition() {
-        instance.popperInstance.scheduleUpdate();
+        var currentRefRect = reference.getBoundingClientRect(); // Only schedule an update if the reference rect has changed
+
+        if (prevRefRect.top !== currentRefRect.top || prevRefRect.right !== currentRefRect.right || prevRefRect.bottom !== currentRefRect.bottom || prevRefRect.left !== currentRefRect.left) {
+          instance.popperInstance.scheduleUpdate();
+        }
+
+        prevRefRect = currentRefRect;
 
         if (instance.state.isMounted) {
           requestAnimationFrame(updatePosition);
-        } else {
-          setTransitionDuration([popper], 0);
         }
       }
 
       updatePosition();
     }
-    /**
-     * Invokes a callback once the tooltip has fully transitioned out
-     */
-
 
     function onTransitionedOut(duration, callback) {
       onTransitionEnd(duration, function () {
@@ -3924,25 +4934,15 @@
         }
       });
     }
-    /**
-     * Invokes a callback once the tooltip has fully transitioned in
-     */
-
 
     function onTransitionedIn(duration, callback) {
       onTransitionEnd(duration, callback);
     }
-    /**
-     * Invokes a callback once the tooltip's CSS transition ends
-     */
-
 
     function onTransitionEnd(duration, callback) {
-      var tooltip = instance.popperChildren.tooltip;
       /**
        * Listener added as the `transitionend` handler
        */
-
       function listener(event) {
         if (event.target === tooltip) {
           updateTransitionEndListener(tooltip, 'remove', listener);
@@ -3960,13 +4960,12 @@
       updateTransitionEndListener(tooltip, 'add', listener);
       currentTransitionEndListener = listener;
     }
-    /**
-     * Adds an event listener to the reference and stores it in `listeners`
-     */
 
+    function on(eventType, handler, options) {
+      if (options === void 0) {
+        options = false;
+      }
 
-    function on(eventType, handler) {
-      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       getEventListenersTarget().addEventListener(eventType, handler, options);
       listeners.push({
         eventType: eventType,
@@ -3974,61 +4973,42 @@
         options: options
       });
     }
-    /**
-     * Adds event listeners to the reference based on the `trigger` prop
-     */
 
-
-    function addTriggersToReference() {
-      if (instance.props.touchHold && !instance.props.target) {
+    function addTriggersToEventListenersTarget() {
+      if (getIsCustomTouchBehavior()) {
         on('touchstart', onTrigger, PASSIVE);
         on('touchend', onMouseLeave, PASSIVE);
+      } // `click` for keyboard. Mouse uses `mousedown` (onDocumentMouseDown)
+
+
+      if (!includes(instance.props.trigger, 'click')) {
+        on('click', function () {
+          if (!currentInput.isTouch && instance.props.hideOnClick === true) {
+            instance.hide();
+          }
+        });
       }
 
       instance.props.trigger.trim().split(' ').forEach(function (eventType) {
         if (eventType === 'manual') {
           return;
-        } // Non-delegates
+        }
 
+        on(eventType, onTrigger);
 
-        if (!instance.props.target) {
-          on(eventType, onTrigger);
+        switch (eventType) {
+          case 'mouseenter':
+            on('mouseleave', onMouseLeave);
+            break;
 
-          switch (eventType) {
-            case 'mouseenter':
-              on('mouseleave', onMouseLeave);
-              break;
-
-            case 'focus':
-              on(isIE$1 ? 'focusout' : 'blur', onBlur);
-              break;
-          }
-        } else {
-          // Delegates
-          switch (eventType) {
-            case 'mouseenter':
-              on('mouseover', onDelegateShow);
-              on('mouseout', onDelegateHide);
-              break;
-
-            case 'focus':
-              on('focusin', onDelegateShow);
-              on('focusout', onDelegateHide);
-              break;
-
-            case 'click':
-              on(eventType, onDelegateShow);
-              break;
-          }
+          case 'focus':
+            on(isIE ? 'focusout' : 'blur', onBlur);
+            break;
         }
       });
     }
-    /**
-     * Removes event listeners from the reference
-     */
 
-
-    function removeTriggersFromReference() {
+    function removeTriggersFromEventListenersTarget() {
       listeners.forEach(function (_ref) {
         var eventType = _ref.eventType,
             handler = _ref.handler,
@@ -4037,88 +5017,9 @@
       });
       listeners = [];
     }
-    /**
-     * Positions the virtual reference near the cursor
-     */
-
-
-    function positionVirtualReferenceNearCursor(event) {
-      var _lastMouseMoveEvent = lastMouseMoveEvent = event,
-          x = _lastMouseMoveEvent.clientX,
-          y = _lastMouseMoveEvent.clientY; // Gets set once popperInstance `onCreate` has been called
-
-
-      if (!currentComputedPadding) {
-        return;
-      } // If the instance is interactive, avoid updating the position unless it's
-      // over the reference element
-
-
-      var isCursorOverReference = closestCallback(event.target, function (el) {
-        return el === reference;
-      });
-      var rect = reference.getBoundingClientRect();
-      var followCursor = instance.props.followCursor;
-      var isHorizontal = followCursor === 'horizontal';
-      var isVertical = followCursor === 'vertical'; // The virtual reference needs some size to prevent itself from overflowing
-
-      var isVerticalPlacement = includes(['top', 'bottom'], getBasicPlacement(popper));
-      var fullPlacement = popper.getAttribute(PLACEMENT_ATTRIBUTE);
-      var isVariation = fullPlacement ? !!fullPlacement.split('-')[1] : false;
-      var size = isVerticalPlacement ? popper.offsetWidth : popper.offsetHeight;
-      var halfSize = size / 2;
-      var verticalIncrease = isVerticalPlacement ? 0 : isVariation ? size : halfSize;
-      var horizontalIncrease = isVerticalPlacement ? isVariation ? size : halfSize : 0;
-
-      if (isCursorOverReference || !instance.props.interactive) {
-        instance.popperInstance.reference = _extends$2({}, instance.popperInstance.reference, {
-          // These `client` values don't get used by Popper.js if they are 0
-          clientWidth: 0,
-          clientHeight: 0,
-          getBoundingClientRect: function getBoundingClientRect() {
-            return {
-              width: isVerticalPlacement ? size : 0,
-              height: isVerticalPlacement ? 0 : size,
-              top: (isHorizontal ? rect.top : y) - verticalIncrease,
-              bottom: (isHorizontal ? rect.bottom : y) + verticalIncrease,
-              left: (isVertical ? rect.left : x) - horizontalIncrease,
-              right: (isVertical ? rect.right : x) + horizontalIncrease
-            };
-          }
-        });
-        instance.popperInstance.update();
-      }
-
-      if (followCursor === 'initial' && instance.state.isVisible) {
-        removeFollowCursorListener();
-      }
-    }
-    /**
-     * Creates the tippy instance for a delegate when it's been triggered
-     */
-
-
-    function createDelegateChildTippy(event) {
-      if (event) {
-        var targetEl = closest(event.target, instance.props.target);
-
-        if (targetEl && !targetEl._tippy) {
-          createTippy(targetEl, _extends$2({}, instance.props, {
-            content: invokeWithArgsOrReturn(collectionProps.content, [targetEl]),
-            appendTo: collectionProps.appendTo,
-            target: '',
-            showOnInit: true
-          }));
-        }
-      }
-    }
-    /**
-     * Event listener invoked upon trigger
-     */
-
 
     function onTrigger(event) {
-      if (!instance.state.isEnabled || isEventListenerStopped(event)) {
+      if (didHideDueToDocumentMouseDown || !instance.state.isEnabled || isEventListenerStopped(event)) {
         return;
       }
 
@@ -4126,11 +5027,10 @@
         lastTriggerEventType = event.type;
 
         if (event instanceof MouseEvent) {
-          lastMouseMoveEvent = event; // If scrolling, `mouseenter` events can be fired if the cursor lands
+          // If scrolling, `mouseenter` events can be fired if the cursor lands
           // over a new target, but `mousemove` events don't get fired. This
           // causes interactive tooltips to get stuck open until the cursor is
           // moved
-
           mouseMoveListeners.forEach(function (listener) {
             return listener(event);
           });
@@ -4139,36 +5039,38 @@
 
 
       if (event.type === 'click' && instance.props.hideOnClick !== false && instance.state.isVisible) {
-        scheduleHide();
+        scheduleHide(event);
       } else {
-        scheduleShow(event);
+        var _getNormalizedTouchSe = getNormalizedTouchSettings(),
+            value = _getNormalizedTouchSe[0],
+            duration = _getNormalizedTouchSe[1];
+
+        if (currentInput.isTouch && value === 'hold' && duration) {
+          // We can hijack the show timeout here, it will be cleared by
+          // `scheduleHide()` when necessary
+          showTimeout = setTimeout(function () {
+            scheduleShow(event);
+          }, duration);
+        } else {
+          scheduleShow(event);
+        }
       }
     }
-    /**
-     * Event listener used for interactive tooltips to detect when they should
-     * hide
-     */
-
 
     function onMouseMove(event) {
-      var isCursorOverPopper = closest(event.target, POPPER_SELECTOR) === popper;
-      var isCursorOverReference = closestCallback(event.target, function (el) {
-        return el === reference;
+      var isCursorOverReferenceOrPopper = closestCallback(event.target, function (el) {
+        return el === reference || el === popper;
       });
 
-      if (isCursorOverPopper || isCursorOverReference) {
+      if (isCursorOverReferenceOrPopper) {
         return;
       }
 
-      if (isCursorOutsideInteractiveBorder(getBasicPlacement(popper), popper.getBoundingClientRect(), event, instance.props)) {
+      if (isCursorOutsideInteractiveBorder(getBasePlacement(instance.state.currentPlacement), popper.getBoundingClientRect(), event, instance.props)) {
         cleanupInteractiveMouseListeners();
-        scheduleHide();
+        scheduleHide(event);
       }
     }
-    /**
-     * Event listener invoked upon mouseleave
-     */
-
 
     function onMouseLeave(event) {
       if (isEventListenerStopped(event)) {
@@ -4182,60 +5084,128 @@
         return;
       }
 
-      scheduleHide();
+      scheduleHide(event);
     }
-    /**
-     * Event listener invoked upon blur
-     */
-
 
     function onBlur(event) {
       if (event.target !== getEventListenersTarget()) {
         return;
-      }
+      } // If focus was moved to within the popper
+
 
       if (instance.props.interactive && event.relatedTarget && popper.contains(event.relatedTarget)) {
         return;
       }
 
-      scheduleHide();
+      scheduleHide(event);
     }
-    /**
-     * Event listener invoked when a child target is triggered
-     */
-
-
-    function onDelegateShow(event) {
-      if (closest(event.target, instance.props.target)) {
-        scheduleShow(event);
-      }
-    }
-    /**
-     * Event listener invoked when a child target should hide
-     */
-
-
-    function onDelegateHide(event) {
-      if (closest(event.target, instance.props.target)) {
-        scheduleHide();
-      }
-    }
-    /**
-     * Determines if an event listener should stop further execution due to the
-     * `touchHold` option
-     */
-
 
     function isEventListenerStopped(event) {
       var supportsTouch = 'ontouchstart' in window;
       var isTouchEvent = includes(event.type, 'touch');
-      var touchHold = instance.props.touchHold;
-      return supportsTouch && isUsingTouch && touchHold && !isTouchEvent || isUsingTouch && !touchHold && isTouchEvent;
+      var isCustomTouch = getIsCustomTouchBehavior();
+      return supportsTouch && currentInput.isTouch && isCustomTouch && !isTouchEvent || currentInput.isTouch && !isCustomTouch && isTouchEvent;
     }
-    /**
-     * Runs the mount callback
-     */
 
+    function createPopperInstance() {
+      var popperOptions = instance.props.popperOptions;
+      var arrow = instance.popperChildren.arrow;
+      var preventOverflowModifier = getModifier(popperOptions, 'preventOverflow');
+
+      function applyMutations(data) {
+        instance.state.currentPlacement = data.placement;
+
+        if (instance.props.flip && !instance.props.flipOnUpdate) {
+          if (data.flipped) {
+            instance.popperInstance.options.placement = data.placement;
+          }
+
+          setFlipModifierEnabled(instance.popperInstance.modifiers, false);
+        }
+
+        tooltip.setAttribute('data-placement', data.placement);
+
+        if (data.attributes['x-out-of-boundaries'] !== false) {
+          tooltip.setAttribute('data-out-of-boundaries', '');
+        } else {
+          tooltip.removeAttribute('data-out-of-boundaries');
+        }
+
+        var basePlacement = getBasePlacement(data.placement);
+        var isVerticalPlacement = includes(['top', 'bottom'], basePlacement);
+        var isSecondaryPlacement = includes(['bottom', 'right'], basePlacement); // Apply `distance` prop
+
+        var tooltipStyles = tooltip.style;
+        tooltipStyles.top = '0';
+        tooltipStyles.left = '0';
+        tooltipStyles[isVerticalPlacement ? 'top' : 'left'] = (isSecondaryPlacement ? 1 : -1) * instance.props.distance + "px";
+      }
+
+      var config = _extends$1({
+        eventsEnabled: false,
+        placement: instance.props.placement
+      }, popperOptions, {
+        modifiers: _extends$1({}, popperOptions && popperOptions.modifiers, {
+          preventOverflow: _extends$1({
+            boundariesElement: instance.props.boundary,
+            padding: PREVENT_OVERFLOW_PADDING
+          }, preventOverflowModifier),
+          // Adds the `distance` calculation to preventOverflow padding
+          tippySetPreventOverflowPadding: {
+            enabled: true,
+            order: 299,
+            fn: function fn(data) {
+              var basePlacement = getBasePlacement(data.placement);
+              var padding = preventOverflowModifier && preventOverflowModifier.padding !== undefined ? preventOverflowModifier.padding : PREVENT_OVERFLOW_PADDING;
+              var isPaddingNumber = typeof padding === 'number';
+              var paddingObject = {
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0
+              };
+              var computedPadding = Object.keys(paddingObject).reduce(function (obj, key) {
+                obj[key] = isPaddingNumber ? padding : padding[key];
+
+                if (basePlacement === key) {
+                  obj[key] = isPaddingNumber ? padding + instance.props.distance : (padding[basePlacement] || 0) + instance.props.distance;
+                }
+
+                return obj;
+              }, paddingObject);
+              instance.popperInstance.modifiers.filter(function (m) {
+                return m.name === 'preventOverflow';
+              })[0].padding = computedPadding;
+              return data;
+            }
+          },
+          arrow: _extends$1({
+            element: arrow,
+            enabled: !!arrow
+          }, getModifier(popperOptions, 'arrow')),
+          flip: _extends$1({
+            enabled: instance.props.flip,
+            padding: instance.props.distance + PREVENT_OVERFLOW_PADDING,
+            behavior: instance.props.flipBehavior
+          }, getModifier(popperOptions, 'flip')),
+          offset: _extends$1({
+            offset: instance.props.offset
+          }, getModifier(popperOptions, 'offset'))
+        }),
+        onCreate: function onCreate(data) {
+          applyMutations(data);
+          preserveInvocation(popperOptions && popperOptions.onCreate, config.onCreate, [data]);
+          runMountCallback();
+        },
+        onUpdate: function onUpdate(data) {
+          applyMutations(data);
+          preserveInvocation(popperOptions && popperOptions.onUpdate, config.onUpdate, [data]);
+          runMountCallback();
+        }
+      });
+
+      instance.popperInstance = new Popper(reference, popper, config);
+    }
 
     function runMountCallback() {
       if (!hasMountCallbackRun && currentMountCallback) {
@@ -4244,310 +5214,125 @@
         currentMountCallback();
       }
     }
-    /**
-     * Creates the popper instance for the instance
-     */
-
-
-    function createPopperInstance() {
-      var popperOptions = instance.props.popperOptions;
-      var _instance$popperChild = instance.popperChildren,
-          tooltip = _instance$popperChild.tooltip,
-          arrow = _instance$popperChild.arrow;
-      var preventOverflowModifier = getModifier(popperOptions, 'preventOverflow');
-
-      function applyMutations(data) {
-        if (instance.props.flip && !instance.props.flipOnUpdate) {
-          if (data.flipped) {
-            instance.popperInstance.options.placement = data.placement;
-          }
-
-          setFlipModifierEnabled(instance.popperInstance.modifiers, false);
-        } // Apply all of the popper's attributes to the tootip node as well.
-        // Allows users to avoid using the .tippy-popper selector for themes.
-
-
-        tooltip.setAttribute(PLACEMENT_ATTRIBUTE, data.placement);
-
-        if (data.attributes[OUT_OF_BOUNDARIES_ATTRIBUTE] !== false) {
-          tooltip.setAttribute(OUT_OF_BOUNDARIES_ATTRIBUTE, '');
-        } else {
-          tooltip.removeAttribute(OUT_OF_BOUNDARIES_ATTRIBUTE);
-        } // Prevents a transition when changing placements (while tippy is visible)
-        // for scroll/resize updates
-
-
-        if (previousPlacement && previousPlacement !== data.placement && wasVisibleDuringPreviousUpdate) {
-          tooltip.style.transition = 'none';
-          requestAnimationFrame(function () {
-            tooltip.style.transition = '';
-          });
-        }
-
-        previousPlacement = data.placement;
-        wasVisibleDuringPreviousUpdate = instance.state.isVisible;
-        var basicPlacement = getBasicPlacement(popper);
-        var styles = tooltip.style; // Account for the `distance` offset
-
-        styles.top = styles.bottom = styles.left = styles.right = '';
-        styles[basicPlacement] = getOffsetDistanceInPx(instance.props.distance);
-        var padding = preventOverflowModifier && preventOverflowModifier.padding !== undefined ? preventOverflowModifier.padding : PADDING;
-        var isPaddingNumber = typeof padding === 'number';
-
-        var computedPadding = _extends$2({
-          top: isPaddingNumber ? padding : padding.top,
-          bottom: isPaddingNumber ? padding : padding.bottom,
-          left: isPaddingNumber ? padding : padding.left,
-          right: isPaddingNumber ? padding : padding.right
-        }, !isPaddingNumber && padding);
-
-        computedPadding[basicPlacement] = isPaddingNumber ? padding + instance.props.distance : (padding[basicPlacement] || 0) + instance.props.distance;
-        instance.popperInstance.modifiers.filter(function (m) {
-          return m.name === 'preventOverflow';
-        })[0].padding = computedPadding;
-        currentComputedPadding = computedPadding;
-      }
-
-      var config = _extends$2({
-        eventsEnabled: false,
-        placement: instance.props.placement
-      }, popperOptions, {
-        modifiers: _extends$2({}, popperOptions ? popperOptions.modifiers : {}, {
-          preventOverflow: _extends$2({
-            boundariesElement: instance.props.boundary,
-            padding: PADDING
-          }, preventOverflowModifier),
-          arrow: _extends$2({
-            element: arrow,
-            enabled: !!arrow
-          }, getModifier(popperOptions, 'arrow')),
-          flip: _extends$2({
-            enabled: instance.props.flip,
-            // The tooltip is offset by 10px from the popper in CSS,
-            // we need to account for its distance
-            padding: instance.props.distance + PADDING,
-            behavior: instance.props.flipBehavior
-          }, getModifier(popperOptions, 'flip')),
-          offset: _extends$2({
-            offset: instance.props.offset
-          }, getModifier(popperOptions, 'offset'))
-        }),
-        onCreate: function onCreate(data) {
-          applyMutations(data);
-          runMountCallback();
-
-          if (popperOptions && popperOptions.onCreate) {
-            popperOptions.onCreate(data);
-          }
-        },
-        onUpdate: function onUpdate(data) {
-          applyMutations(data);
-          runMountCallback();
-
-          if (popperOptions && popperOptions.onUpdate) {
-            popperOptions.onUpdate(data);
-          }
-        }
-      });
-
-      instance.popperInstance = new Popper(reference, popper, config);
-    }
-    /**
-     * Mounts the tooltip to the DOM
-     */
-
 
     function mount() {
+      // The mounting callback (`currentMountCallback`) is only run due to a
+      // popperInstance update/create
       hasMountCallbackRun = false;
-      var isInLooseFollowCursorMode = getIsInLooseFollowCursorMode();
-
-      if (instance.popperInstance) {
-        setFlipModifierEnabled(instance.popperInstance.modifiers, instance.props.flip);
-
-        if (!isInLooseFollowCursorMode) {
-          instance.popperInstance.reference = reference;
-          instance.popperInstance.enableEventListeners();
-        }
-
-        instance.popperInstance.scheduleUpdate();
-      } else {
-        createPopperInstance();
-
-        if (!isInLooseFollowCursorMode) {
-          instance.popperInstance.enableEventListeners();
-        }
-      }
-
       var appendTo = instance.props.appendTo;
-      var parentNode = appendTo === 'parent' ? reference.parentNode : invokeWithArgsOrReturn(appendTo, [reference]);
+      var parentNode = appendTo === 'parent' ? reference.parentNode : invokeWithArgsOrReturn(appendTo, [reference]); // The popper element needs to exist on the DOM before its position can be
+      // updated as Popper.js needs to read its dimensions
 
       if (!parentNode.contains(popper)) {
         parentNode.appendChild(popper);
-        instance.props.onMount(instance);
-        instance.state.isMounted = true;
+      }
+
+      if (instance.popperInstance) {
+        setFlipModifierEnabled(instance.popperInstance.modifiers, instance.props.flip);
+        instance.popperInstance.enableEventListeners(); // Mounting callback invoked in `onUpdate`
+
+        instance.popperInstance.scheduleUpdate();
+      } else {
+        // Mounting callback invoked in `onCreate`
+        createPopperInstance();
+        instance.popperInstance.enableEventListeners();
       }
     }
-    /**
-     * Setup before show() is invoked (delays, etc.)
-     */
 
+    function scheduleShow(event) {
+      instance.clearDelayTimeouts();
+      instance.state.isScheduledToShow = true;
 
-    function scheduleShow(event, shouldAvoidCallingOnTrigger) {
-      clearDelayTimeouts();
-
-      if (instance.state.isVisible) {
-        return;
-      } // Is a delegate, create an instance for the child target
-
-
-      if (instance.props.target) {
-        return createDelegateChildTippy(event);
+      if (!instance.popperInstance) {
+        createPopperInstance();
       }
 
-      isScheduledToShow = true;
-
-      if (event && !shouldAvoidCallingOnTrigger) {
+      if (event) {
         instance.props.onTrigger(instance, event);
       }
 
-      if (instance.props.wait) {
-        return instance.props.wait(instance, event);
-      } // If the tooltip has a delay, we need to be listening to the mousemove as
-      // soon as the trigger event is fired, so that it's in the correct position
-      // upon mount.
-      // Edge case: if the tooltip is still mounted, but then scheduleShow() is
-      // called, it causes a jump.
-
-
-      if (getIsInLooseFollowCursorMode() && !instance.state.isMounted) {
-        if (!instance.popperInstance) {
-          createPopperInstance();
-        }
-
-        document.addEventListener('mousemove', positionVirtualReferenceNearCursor);
-      }
-
-      addDocumentClickListener();
-      var delay = getValue(instance.props.delay, 0, defaultProps.delay);
+      addDocumentMouseDownListener();
+      var delay = getValueAtIndexOrReturn(instance.props.delay, 0, defaultProps.delay);
 
       if (delay) {
-        showTimeoutId = setTimeout(function () {
-          show();
+        showTimeout = setTimeout(function () {
+          instance.show();
         }, delay);
       } else {
-        show();
+        instance.show();
       }
     }
-    /**
-     * Setup before hide() is invoked (delays, etc.)
-     */
 
-
-    function scheduleHide() {
-      clearDelayTimeouts();
+    function scheduleHide(event) {
+      instance.clearDelayTimeouts();
+      instance.props.onUntrigger(instance, event);
 
       if (!instance.state.isVisible) {
-        return removeFollowCursorListener();
+        removeDocumentMouseDownListener();
+        return;
       }
 
-      isScheduledToShow = false;
-      var delay = getValue(instance.props.delay, 1, defaultProps.delay);
+      instance.state.isScheduledToShow = false;
+      var delay = getValueAtIndexOrReturn(instance.props.delay, 1, defaultProps.delay);
 
       if (delay) {
-        hideTimeoutId = setTimeout(function () {
+        hideTimeout = setTimeout(function () {
           if (instance.state.isVisible) {
-            hide();
+            instance.hide();
           }
         }, delay);
       } else {
         // Fixes a `transitionend` problem when it fires 1 frame too
         // late sometimes, we don't want hide() to be called.
-        scheduleHideAnimationFrameId = requestAnimationFrame(function () {
-          hide();
+        scheduleHideAnimationFrame = requestAnimationFrame(function () {
+          instance.hide();
         });
       }
     }
-    /**
-     * Listener to handle clicks on the document to determine if the
-     * instance should hide
-     */
-
-
-    function onDocumentClick(event) {
-      // Clicked on interactive popper
-      if (instance.props.interactive && popper.contains(event.target)) {
-        return;
-      } // Clicked on the event listeners target
-
-
-      if (getEventListenersTarget().contains(event.target)) {
-        if (isUsingTouch) {
-          return;
-        }
-
-        if (instance.state.isVisible && includes(instance.props.trigger, 'click')) {
-          return;
-        }
-      }
-
-      if (instance.props.hideOnClick === true) {
-        clearDelayTimeouts();
-        hide();
-      }
-    }
     /* ======================= 🔑 Public methods 🔑 ======================= */
-
-    /**
-     * Enables the instance to allow it to show or hide
-     */
 
 
     function enable() {
       instance.state.isEnabled = true;
     }
-    /**
-     * Disables the instance to disallow it to show or hide
-     */
-
 
     function disable() {
+      // Disabling the instance should also hide it
+      // https://github.com/atomiks/tippy.js-react/issues/106
+      instance.hide();
       instance.state.isEnabled = false;
     }
-    /**
-     * Clears pending timeouts related to the `delay` prop if any
-     */
-
 
     function clearDelayTimeouts() {
-      clearTimeout(showTimeoutId);
-      clearTimeout(hideTimeoutId);
-      cancelAnimationFrame(scheduleHideAnimationFrameId);
-    }
-    /**
-     * Sets new props for the instance and redraws the tooltip
-     */
+      clearTimeout(showTimeout);
+      clearTimeout(hideTimeout);
+      cancelAnimationFrame(scheduleHideAnimationFrame);
+    } // Cloning as we're deleting non-updateable props in DEV mode
 
 
-    function set(options) {
-      // Backwards-compatible after TypeScript change
-      options = options || {};
-      validateOptions(options, defaultProps);
-      removeTriggersFromReference();
+    function setProps(_ref2) {
+      var partialProps = _extends$1({}, _ref2);
+
+      if (instance.state.isDestroyed) {
+        return;
+      }
+
+      removeTriggersFromEventListenersTarget();
       var prevProps = instance.props;
-      var nextProps = evaluateProps(reference, _extends$2({}, instance.props, options, {
+      var nextProps = evaluateProps(reference, _extends$1({}, instance.props, {}, partialProps, {
         ignoreAttributes: true
       }));
-      nextProps.ignoreAttributes = hasOwnProperty$1(options, 'ignoreAttributes') ? options.ignoreAttributes || false : prevProps.ignoreAttributes;
+      nextProps.ignoreAttributes = hasOwnProperty$1(partialProps, 'ignoreAttributes') ? partialProps.ignoreAttributes || false : prevProps.ignoreAttributes;
       instance.props = nextProps;
-      addTriggersToReference();
+      addTriggersToEventListenersTarget();
       cleanupInteractiveMouseListeners();
-      debouncedOnMouseMove = debounce$1(onMouseMove, nextProps.interactiveDebounce);
-      updatePopperElement(popper, prevProps, nextProps);
+      debouncedOnMouseMove = debounce(onMouseMove, nextProps.interactiveDebounce);
+      updatePopperElement(popper, prevProps, nextProps, instance.state.isVisible);
       instance.popperChildren = getChildren(popper);
 
       if (instance.popperInstance) {
         if (POPPER_INSTANCE_DEPENDENCIES.some(function (prop) {
-          return hasOwnProperty$1(options, prop) && options[prop] !== prevProps[prop];
+          return hasOwnProperty$1(partialProps, prop) && partialProps[prop] !== prevProps[prop];
         })) {
           instance.popperInstance.destroy();
           createPopperInstance();
@@ -4555,36 +5340,36 @@
           if (instance.state.isVisible) {
             instance.popperInstance.enableEventListeners();
           }
-
-          if (instance.props.followCursor && lastMouseMoveEvent) {
-            positionVirtualReferenceNearCursor(lastMouseMoveEvent);
-          }
         } else {
           instance.popperInstance.update();
         }
       }
     }
-    /**
-     * Shortcut for .set({ content: newContent })
-     */
-
 
     function setContent(content) {
-      set({
+      instance.setProps({
         content: content
       });
     }
-    /**
-     * Shows the tooltip
-     */
+
+    function show(duration, shouldPreventPopperTransition) {
+      if (duration === void 0) {
+        duration = getValueAtIndexOrReturn(instance.props.duration, 0, defaultProps.duration);
+      }
+
+      if (shouldPreventPopperTransition === void 0) {
+        shouldPreventPopperTransition = true;
+      }
 
 
-    function show() {
-      var duration = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getValue(instance.props.duration, 0, defaultProps.duration[1]);
+      var isAlreadyVisible = instance.state.isVisible;
+      var isDestroyed = instance.state.isDestroyed;
+      var isDisabled = !instance.state.isEnabled;
+      var isTouchAndTouchDisabled = currentInput.isTouch && !instance.props.touch;
 
-      if (instance.state.isDestroyed || !instance.state.isEnabled || isUsingTouch && !instance.props.touch) {
+      if (isAlreadyVisible || isDestroyed || isDisabled || isTouchAndTouchDisabled) {
         return;
-      } // Standardize `disabled` behavior across browsers.
+      } // Normalize `disabled` behavior across browsers.
       // Firefox allows events on disabled elements, but Chrome doesn't.
       // Using a wrapper element (i.e. <span>) is recommended.
 
@@ -4597,35 +5382,27 @@
         return;
       }
 
-      addDocumentClickListener();
+      addDocumentMouseDownListener();
       popper.style.visibility = 'visible';
-      instance.state.isVisible = true;
-
-      if (instance.props.interactive) {
-        getEventListenersTarget().classList.add(ACTIVE_CLASS);
-      } // Prevent a transition if the popper is at the opposite placement
-
+      instance.state.isVisible = true; // Prevent a transition of the popper from its previous position and of the
+      // elements at a different placement.
 
       var transitionableElements = getTransitionableElements();
-      setTransitionDuration(transitionableElements.concat(popper), 0);
+      setTransitionDuration(shouldPreventPopperTransition ? transitionableElements.concat(popper) : transitionableElements, 0);
 
       currentMountCallback = function currentMountCallback() {
         if (!instance.state.isVisible) {
           return;
-        }
+        } // Double update will apply correct mutations
 
-        var isInLooseFollowCursorMode = getIsInLooseFollowCursorMode();
 
-        if (isInLooseFollowCursorMode && lastMouseMoveEvent) {
-          positionVirtualReferenceNearCursor(lastMouseMoveEvent);
-        } else if (!isInLooseFollowCursorMode) {
-          // Double update will apply correct mutations
-          instance.popperInstance.update();
-        }
+        instance.popperInstance.update();
+        instance.props.onMount(instance);
+        instance.state.isMounted = true; // The content should fade in after the backdrop has mostly filled the
+        // tooltip element. `clip-path` is the other alternative but is not well-
+        // supported and is buggy on some devices.
 
-        if (instance.popperChildren.backdrop) {
-          instance.popperChildren.content.style.transitionDelay = Math.round(duration / 12) + 'ms';
-        }
+        content.style.transitionDelay = instance.popperChildren.backdrop ? Math.round(duration / 12) + "ms" : '';
 
         if (instance.props.sticky) {
           makeSticky();
@@ -4636,7 +5413,11 @@
         setVisibilityState(transitionableElements, 'visible');
         onTransitionedIn(duration, function () {
           if (instance.props.aria) {
-            getEventListenersTarget().setAttribute("aria-".concat(instance.props.aria), popper.id);
+            var node = getEventListenersTarget();
+            var attrName = "aria-" + instance.props.aria;
+            var currentAttrValue = node.getAttribute(attrName);
+            var nextAttrValue = currentAttrValue ? currentAttrValue + " " + tooltip.id : tooltip.id;
+            node.setAttribute(attrName, nextAttrValue);
           }
 
           instance.props.onShown(instance);
@@ -4646,15 +5427,18 @@
 
       mount();
     }
-    /**
-     * Hides the tooltip
-     */
+
+    function hide(duration) {
+      if (duration === void 0) {
+        duration = getValueAtIndexOrReturn(instance.props.duration, 1, defaultProps.duration);
+      }
 
 
-    function hide() {
-      var duration = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getValue(instance.props.duration, 1, defaultProps.duration[1]);
+      var isAlreadyHidden = !instance.state.isVisible && !isBeingDestroyed;
+      var isDestroyed = instance.state.isDestroyed;
+      var isDisabled = !instance.state.isEnabled && !isBeingDestroyed;
 
-      if (instance.state.isDestroyed || !instance.state.isEnabled && !isBeingDestroyed) {
+      if (isAlreadyHidden || isDestroyed || isDisabled) {
         return;
       }
 
@@ -4662,26 +5446,25 @@
         return;
       }
 
-      removeDocumentClickListener();
+      removeDocumentMouseDownListener();
       popper.style.visibility = 'hidden';
       instance.state.isVisible = false;
       instance.state.isShown = false;
-      wasVisibleDuringPreviousUpdate = false;
-
-      if (instance.props.interactive) {
-        getEventListenersTarget().classList.remove(ACTIVE_CLASS);
-      }
-
       var transitionableElements = getTransitionableElements();
       setTransitionDuration(transitionableElements, duration);
       setVisibilityState(transitionableElements, 'hidden');
       onTransitionedOut(duration, function () {
-        if (!isScheduledToShow) {
-          removeFollowCursorListener();
-        }
-
         if (instance.props.aria) {
-          getEventListenersTarget().removeAttribute("aria-".concat(instance.props.aria));
+          var node = getEventListenersTarget();
+          var attrName = "aria-" + instance.props.aria;
+          var currentAttrValue = node.getAttribute(attrName);
+          var nextAttrValue = currentAttrValue ? currentAttrValue.replace(tooltip.id, '').trim() : null;
+
+          if (nextAttrValue) {
+            node.setAttribute(attrName, nextAttrValue);
+          } else {
+            node.removeAttribute(attrName);
+          }
         }
 
         instance.popperInstance.disableEventListeners();
@@ -4691,34 +5474,17 @@
         instance.state.isMounted = false;
       });
     }
-    /**
-     * Destroys the tooltip
-     */
 
+    function destroy() {
 
-    function destroy(destroyTargetInstances) {
       if (instance.state.isDestroyed) {
         return;
       }
 
-      isBeingDestroyed = true; // If the popper is currently mounted to the DOM, we want to ensure it gets
-      // hidden and unmounted instantly upon destruction
-
-      if (instance.state.isMounted) {
-        hide(0);
-      }
-
-      removeTriggersFromReference();
+      isBeingDestroyed = true;
+      instance.hide(0);
+      removeTriggersFromEventListenersTarget();
       delete reference._tippy;
-      var target = instance.props.target;
-
-      if (target && destroyTargetInstances && isRealElement(reference)) {
-        arrayFrom(reference.querySelectorAll(target)).forEach(function (child) {
-          if (child._tippy) {
-            child._tippy.destroy();
-          }
-        });
-      }
 
       if (instance.popperInstance) {
         instance.popperInstance.destroy();
@@ -4730,129 +5496,73 @@
   }
 
   /**
-   * Groups an array of instances by taking control of their props during
-   * certain lifecycles.
-   */
-  function group(instances) {
-    var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-        _ref$delay = _ref.delay,
-        delay = _ref$delay === void 0 ? instances[0].props.delay : _ref$delay,
-        _ref$duration = _ref.duration,
-        duration = _ref$duration === void 0 ? 0 : _ref$duration;
-
-    var isAnyTippyOpen = false;
-    instances.forEach(function (instance) {
-      if (instance._originalProps) {
-        instance.set(instance._originalProps);
-      } else {
-        instance._originalProps = _extends$2({}, instance.props);
-      }
-    });
-
-    function setIsAnyTippyOpen(value) {
-      isAnyTippyOpen = value;
-      updateInstances();
-    }
-
-    function onShow(instance) {
-      instance._originalProps.onShow(instance);
-
-      instances.forEach(function (instance) {
-        instance.set({
-          duration: duration
-        });
-
-        if (instance.state.isVisible) {
-          instance.hide();
-        }
-      });
-      setIsAnyTippyOpen(true);
-    }
-
-    function onHide(instance) {
-      instance._originalProps.onHide(instance);
-
-      setIsAnyTippyOpen(false);
-    }
-
-    function onShown(instance) {
-      instance._originalProps.onShown(instance);
-
-      instance.set({
-        duration: instance._originalProps.duration
-      });
-    }
-
-    function updateInstances() {
-      instances.forEach(function (instance) {
-        instance.set({
-          onShow: onShow,
-          onShown: onShown,
-          onHide: onHide,
-          delay: isAnyTippyOpen ? [0, Array.isArray(delay) ? delay[1] : delay] : delay,
-          duration: isAnyTippyOpen ? duration : instance._originalProps.duration
-        });
-      });
-    }
-
-    updateInstances();
-  }
-
-  var globalEventListenersBound = false;
-  /**
    * Exported module
    */
+  function tippy(targets, optionalProps) {
 
-  function tippy(targets, options) {
-    validateOptions(options || {}, defaultProps);
+    bindGlobalEventListeners();
 
-    if (!globalEventListenersBound) {
-      bindGlobalEventListeners();
-      globalEventListenersBound = true;
-    }
+    var props = _extends$1({}, defaultProps, {}, optionalProps);
 
-    var props = _extends$2({}, defaultProps, options); // If they are specifying a virtual positioning reference, we need to polyfill
-    // some native DOM props
+    var elements = getArrayOfElements(targets);
 
-
-    if (isBareVirtualElement(targets)) {
-      polyfillElementPrototypeProperties(targets);
-    }
-
-    var instances = getArrayOfElements(targets).reduce(function (acc, reference) {
+    var instances = elements.reduce(function (acc, reference) {
       var instance = reference && createTippy(reference, props);
 
       if (instance) {
+
         acc.push(instance);
       }
 
       return acc;
     }, []);
-    return isSingular(targets) ? instances[0] : instances;
+    return isRealElement(targets) ? instances[0] : instances;
   }
-  /**
-   * Static props
-   */
-
 
   tippy.version = version;
-  tippy.defaults = defaultProps;
+  tippy.defaultProps = defaultProps;
+  tippy.currentInput = currentInput;
   /**
-   * Static methods
+   * Mutates the defaultProps object by setting the props specified
    */
 
-  tippy.setDefaults = function (partialDefaults) {
-    Object.keys(partialDefaults).forEach(function (key) {
+  tippy.setDefaultProps = function (partialProps) {
+
+    Object.keys(partialProps).forEach(function (key) {
       // @ts-ignore
-      defaultProps[key] = partialDefaults[key];
+      defaultProps[key] = partialProps[key];
     });
   };
+  /**
+   * Hides all visible poppers on the document
+   */
 
-  tippy.hideAll = hideAll;
-  tippy.group = group;
+
+  tippy.hideAll = function (_temp) {
+    var _ref = _temp === void 0 ? {} : _temp,
+        excludedReferenceOrInstance = _ref.exclude,
+        duration = _ref.duration;
+
+    arrayFrom(document.querySelectorAll(POPPER_SELECTOR)).forEach(function (popper) {
+      var instance = popper._tippy;
+
+      if (instance) {
+        var isExcluded = false;
+
+        if (excludedReferenceOrInstance) {
+          isExcluded = isReferenceElement(excludedReferenceOrInstance) ? instance.reference === excludedReferenceOrInstance : popper === excludedReferenceOrInstance.popper;
+        }
+
+        if (!isExcluded) {
+          instance.hide(duration);
+        }
+      }
+    });
+  };
   /**
    * Auto-init tooltips for elements with a `data-tippy="..."` attribute
    */
+
 
   function autoInit() {
     arrayFrom(document.querySelectorAll('[data-tippy]')).forEach(function (el) {
@@ -4866,73 +5576,74 @@
     });
   }
 
-  if (isBrowser$1) {
+  if (isBrowser) {
     setTimeout(autoInit);
   }
+
+  /**!
+  * tippy.js v5.0.0-beta.1
+  * (c) 2017-2019 atomiks
+  * MIT License
+  */
+
+  var css = ".tippy-tooltip[data-animation=fade][data-state=hidden]{opacity:0}.tippy-iOS{cursor:pointer!important;-webkit-tap-highlight-color:transparent}.tippy-popper{pointer-events:none;max-width:calc(100% - 10px);transition-timing-function:cubic-bezier(.165,.84,.44,1)}.tippy-tooltip{position:relative;color:#fff;border-radius:.25rem;font-size:.875rem;line-height:1.4;background-color:#333;overflow:hidden;transition-property:visibility,opacity,transform;outline:0}.tippy-tooltip[data-placement^=top] .tippy-arrow{border-width:8px 8px 0;border-top-color:#333;margin:0 3px;transform-origin:50% 0;bottom:-7px}.tippy-tooltip[data-placement^=bottom] .tippy-arrow{border-width:0 8px 8px;border-bottom-color:#333;margin:0 3px;transform-origin:50% 7px;top:-7px}.tippy-tooltip[data-placement^=left] .tippy-arrow{border-width:8px 0 8px 8px;border-left-color:#333;margin:3px 0;transform-origin:0 50%;right:-7px}.tippy-tooltip[data-placement^=right] .tippy-arrow{border-width:8px 8px 8px 0;border-right-color:#333;margin:3px 0;transform-origin:7px 50%;left:-7px}.tippy-tooltip[data-arrow]{overflow:visible}.tippy-tooltip[data-animatefill]{background-color:transparent!important}.tippy-tooltip[data-interactive]{pointer-events:auto}.tippy-tooltip[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-tooltip[data-inertia][data-state=hidden]{transition-timing-function:ease}.tippy-arrow{border-color:transparent;border-style:solid;position:absolute}.tippy-arrow[data-state=hidden]{opacity:0}.tippy-content{padding:.3125rem .5625rem}";
 
   /**
    * Injects a string of CSS styles to a style node in <head>
    */
-
   function injectCSS(css) {
-    if (isBrowser$1) {
-      var style = document.createElement('style');
-      style.type = 'text/css';
-      style.textContent = css;
-      style.setAttribute('data-tippy-stylesheet', '');
-      var head = document.head;
-      var firstChild = head.firstChild;
+    var style = document.createElement('style');
+    style.textContent = css;
+    style.setAttribute('data-tippy-stylesheet', '');
+    var head = document.head;
+    var firstStyleOrLinkTag = head.querySelector('style,link');
 
-      if (firstChild) {
-        head.insertBefore(style, firstChild);
-      } else {
-        head.appendChild(style);
-      }
+    if (firstStyleOrLinkTag) {
+      head.insertBefore(style, firstStyleOrLinkTag);
+    } else {
+      head.appendChild(style);
     }
   }
 
-  injectCSS(css);
+  if (isBrowser) {
+    injectCSS(css);
+  }
 
-  var missingTippy = 'Using the attachment feature of Shepherd requires the Tippy.js library';
-
-  var addShepherdClass = {
-    enabled: true,
-    fn: function fn(data) {
-      data.instance.popper.classList.add('shepherd-popper');
-      return data;
-    }
+  var addHasTitleClass = function addHasTitleClass(step) {
+    return {
+      addHasTitleClass: _createClassModifier(step.classPrefix + "shepherd-has-title")
+    };
   };
-  var centeredStylePopperModifier = {
-    computeStyle: {
-      enabled: true,
-      fn: function fn(data) {
-        data.styles = _extends({}, data.styles, {
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)'
-        });
-        return data;
-      }
-    },
-    addShepherdClass: addShepherdClass
-  }; // Used to compose settings for tippyOptions.popperOptions (https://atomiks.github.io/tippyjs/#popper-options-option)
 
-  var defaultPopperOptions = {
-    positionFixed: true,
-    modifiers: {
-      addShepherdClass: addShepherdClass
-    }
-  };
+  function _getCenteredStylePopperModifier(styles) {
+    return {
+      computeStyle: {
+        enabled: true,
+        fn: function fn(data) {
+          data.styles = _extends({}, data.styles, {
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)'
+          });
+          return data;
+        }
+      },
+      addShepherdClass: _createClassModifier(styles.shepherd.trim())
+    };
+  }
   /**
-   * TODO rewrite the way items are being added to use more performant documentFragment code
-   * @param html
-   * @return {HTMLElement} The element created from the passed HTML string
+   * Used to compose settings for tippyOptions.popperOptions (https://atomiks.github.io/tippyjs/#popper-options-option)
+   * @private
    */
 
-  function createFromHTML(html) {
-    var el = document.createElement('div');
-    el.innerHTML = html;
-    return el.children[0];
+
+  function _getDefaultPopperOptions(styles) {
+    return {
+      positionFixed: true,
+      modifiers: {
+        addShepherdClass: _createClassModifier(styles.shepherd.trim())
+      }
+    };
   }
   /**
    * Returns a function, that, as long as it continues to be invoked, will not
@@ -4944,6 +5655,7 @@
    * @param {Boolean} immediate If true, the function will be invoked immediately
    * @return {Function}
    */
+
 
   function debounce$2(func, wait, immediate) {
     var timeout;
@@ -4969,93 +5681,28 @@
     };
   }
   /**
-   * Creates a slice of `arr` with n elements dropped from the beginning.
-   * @param {Array} arr
-   * @param {Number} n
-   * @return {*}
+   * Ensure class prefix ends in `-`
+   * @param {string} prefix The prefix to prepend to the class names generated by nano-css
+   * @return {string} The prefix ending in `-`
    */
 
-  function drop(arr) {
-    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-    if (Array.isArray(arr)) {
-      return arr.slice(n);
+  function normalizePrefix(prefix) {
+    if (!isString(prefix) || prefix === '') {
+      return '';
     }
 
-    return [];
+    return prefix.charAt(prefix.length - 1) !== '-' ? prefix + "-" : prefix;
   }
   /**
-   * Parse the position object or string to return the attachment and element to attach to
-   * @param {Object|String} position Either a string or object denoting the selector and position for attachment
-   * @return {Object} The object with `element` and `on` for the step
-   * @private
-   */
-
-  function _parseAttachToOpts(opts) {
-    if (lodash_isobjectlike(opts)) {
-      if (opts.hasOwnProperty('element') && opts.hasOwnProperty('on')) {
-        return opts;
-      }
-
-      return null;
-    }
-
-    var positionRe = /^(.+) ((auto|top|left|right|bottom)(-start|-end)?)$/;
-    var matches = positionRe.exec(opts);
-
-    if (!matches) {
-      return null;
-    }
-
-    return {
-      element: matches[1],
-      on: matches[2]
-    };
-  }
-  /**
-   * @param obj
-   * @param {Array} props
-   * @return {*}
-   */
-
-  function parseShorthand(obj, props) {
-    if (obj === null || isUndefined(obj)) {
-      return obj;
-    } else if (lodash_isobjectlike(obj)) {
-      return obj;
-    }
-
-    var values = obj.split(' ');
-    return lodash_zipobject(props, values);
-  }
-  /**
-   * Determines options for the tooltip and initializes
-   * `this.tooltip` as a Tippy.js instance.
-   */
-
-  function setupTooltip() {
-    if (isUndefined(tippy)) {
-      throw new Error(missingTippy);
-    }
-
-    if (this.tooltip) {
-      this.tooltip.destroy();
-    }
-
-    var attachToOpts = this.parseAttachTo();
-    this.tooltip = _makeTippyInstance.call(this, attachToOpts);
-    this.target = attachToOpts.element || document.body;
-    this.el.classList.add('shepherd-element');
-  }
-  /**
-   * Passes `options.attachTo` to `_parseAttachToOpts` to get the correct `attachTo` format
-   * @returns {({} & {element, on}) | ({})}
+   * Checks if options.attachTo.element is a string, and if so, tries to find the element
+   * @param {Step} step The step instance
+   * @returns {{element, on}}
    * `element` is a qualified HTML Element
    * `on` is a string position value
    */
 
-  function parseAttachTo() {
-    var options = _parseAttachToOpts(this.options.attachTo) || {};
+  function parseAttachTo(step) {
+    var options = step.options.attachTo || {};
 
     var returnOpts = _extends({}, options);
 
@@ -5068,25 +5715,62 @@
       }
 
       if (!returnOpts.element) {
-        console.error("The element for this Shepherd step was not found ".concat(options.element));
+        console.error("The element for this Shepherd step was not found " + options.element);
       }
     }
 
     return returnOpts;
   }
   /**
-   * Generates a `Tippy` instance from a set of base `attachTo` options
-   *
-   * @return {tippy} The final tippy instance
+   * Determines options for the tooltip and initializes
+   * `step.tooltip` as a Tippy.js instance.
+   * @param {Step} step The step instance
+   */
+
+  function setupTooltip(step) {
+    if (isUndefined(tippy)) {
+      throw new Error('Using the attachment feature of Shepherd requires the Tippy.js library');
+    }
+
+    if (step.tooltip) {
+      step.tooltip.destroy();
+    }
+
+    var attachToOpts = parseAttachTo(step);
+    step.tooltip = _makeTippyInstance(attachToOpts, step);
+    step.target = attachToOpts.element;
+  }
+  /**
+   * Create a popper modifier for adding the passed className to the popper
+   * @param {string} className The class to add to the popper
+   * @return {{fn(*): *, enabled: boolean}|*}
    * @private
    */
 
-  function _makeTippyInstance(attachToOptions) {
-    if (!attachToOptions.element) {
-      return _makeCenteredTippy.call(this);
+  function _createClassModifier(className) {
+    return {
+      enabled: true,
+      fn: function fn(data) {
+        data.instance.popper.classList.add(className);
+        return data;
+      }
+    };
+  }
+  /**
+   * Generates a `Tippy` instance from a set of base `attachTo` options
+   * @param attachToOptions
+   * @param {Step} step The step instance
+   * @return {tippy|Instance | Instance[]} The final tippy instance
+   * @private
+   */
+
+
+  function _makeTippyInstance(attachToOptions, step) {
+    if (!attachToOptions.element || !attachToOptions.on) {
+      return _makeCenteredTippy(step);
     }
 
-    var tippyOptions = _makeAttachedTippyOptions.call(this, attachToOptions);
+    var tippyOptions = _makeAttachedTippyOptions(attachToOptions, step);
 
     return tippy(attachToOptions.element, tippyOptions);
   }
@@ -5095,416 +5779,448 @@
    * target an element in the DOM.
    *
    * @param {Object} attachToOptions The local `attachTo` options
+   * @param {Step} step The step instance
    * @return {Object} The final tippy options  object
    * @private
    */
 
 
-  function _makeAttachedTippyOptions(attachToOptions) {
-    var resultingTippyOptions = {
-      content: this.el,
+  function _makeAttachedTippyOptions(attachToOptions, step) {
+    var defaultPopperOptions = _getDefaultPopperOptions(step.styles);
+
+    var tippyOptions = _extends({
+      content: step.el,
       flipOnUpdate: true,
       placement: attachToOptions.on || 'right'
-    };
+    }, step.options.tippyOptions);
 
-    _extends(resultingTippyOptions, this.options.tippyOptions);
-
-    if (this.options.title) {
-      var existingTheme = resultingTippyOptions.theme;
-      resultingTippyOptions.theme = existingTheme ? "".concat(existingTheme, " shepherd-has-title") : 'shepherd-has-title';
+    if (step.options.title) {
+      objectAssignDeep(defaultPopperOptions.modifiers, addHasTitleClass(step));
     }
 
-    if (this.options.tippyOptions && this.options.tippyOptions.popperOptions) {
-      _extends(defaultPopperOptions, this.options.tippyOptions.popperOptions);
+    if (step.options.tippyOptions && step.options.tippyOptions.popperOptions) {
+      objectAssignDeep(defaultPopperOptions, step.options.tippyOptions.popperOptions);
     }
 
-    resultingTippyOptions.popperOptions = defaultPopperOptions;
-    return resultingTippyOptions;
+    tippyOptions.popperOptions = defaultPopperOptions;
+    return tippyOptions;
   }
   /**
    * Generates a `Tippy` instance for a tooltip that doesn't have a
    * target element in the DOM -- and thus is positioned in the center
    * of the view
    *
+   * @param {Step} step The step instance
    * @return {tippy} The final tippy instance
    * @private
    */
 
 
-  function _makeCenteredTippy() {
-    var tippyOptions = _objectSpread({
-      content: this.el,
+  function _makeCenteredTippy(step) {
+    var centeredStylePopperModifier = _getCenteredStylePopperModifier(step.styles);
+
+    var defaultPopperOptions = _getDefaultPopperOptions(step.styles);
+
+    var tippyOptions = _extends({
+      content: step.el,
       placement: 'top'
-    }, this.options.tippyOptions);
+    }, step.options.tippyOptions);
 
     tippyOptions.arrow = false;
     tippyOptions.popperOptions = tippyOptions.popperOptions || {};
 
-    var finalPopperOptions = _extends({}, defaultPopperOptions, tippyOptions.popperOptions, {
-      modifiers: _extends(centeredStylePopperModifier, tippyOptions.popperOptions.modifiers)
-    });
+    if (step.options.title) {
+      objectAssignDeep(defaultPopperOptions.modifiers, addHasTitleClass(step));
+    }
 
+    objectAssignDeep(defaultPopperOptions.modifiers, centeredStylePopperModifier, tippyOptions.popperOptions.modifiers);
+    var finalPopperOptions = objectAssignDeep({}, defaultPopperOptions, tippyOptions.popperOptions);
     tippyOptions.popperOptions = finalPopperOptions;
     return tippy(document.body, tippyOptions);
   }
 
-  var Evented =
+  /**
+   * Remove any leftover modal target classes and add the modal target class to the currentElement
+   * @param {HTMLElement} currentElement The element for the current step
+   * @param {string} classPrefix The prefix to add to the class name
+   */
+  function toggleShepherdModalClass(currentElement, classPrefix) {
+    var shepherdModalTarget = document.querySelector("." + classPrefix + "shepherd-modal-target");
+
+    if (shepherdModalTarget) {
+      shepherdModalTarget.classList.remove(classPrefix + "shepherd-modal-target");
+    }
+
+    currentElement.classList.add(classPrefix + "shepherd-modal-target");
+  }
+
+  var Component$1 = preact.Component;
+
+  var ShepherdButton =
   /*#__PURE__*/
-  function () {
-    function Evented() {
-      _classCallCheck(this, Evented);
+  function (_Component) {
+    _inheritsLoose(ShepherdButton, _Component);
+
+    function ShepherdButton() {
+      return _Component.apply(this, arguments) || this;
     }
 
-    _createClass(Evented, [{
-      key: "on",
-      value: function on(event, handler, ctx) {
-        var once = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
+    var _proto = ShepherdButton.prototype;
 
-        if (isUndefined(this.bindings)) {
-          this.bindings = {};
-        }
+    _proto.render = function render(props) {
+      var classPrefix = props.classPrefix,
+          config = props.config,
+          step = props.step,
+          styles = props.styles;
+      var action = config.action,
+          classes = config.classes,
+          secondary = config.secondary,
+          text = config.text;
+      return preact.h("button", {
+        className: (classes || '') + styles.button + (secondary ? " " + classPrefix + "shepherd-button-secondary" : ''),
+        onClick: action ? action.bind(step.tour) : null,
+        tabindex: "0"
+      }, text);
+    };
 
-        if (isUndefined(this.bindings[event])) {
-          this.bindings[event] = [];
-        }
+    return ShepherdButton;
+  }(Component$1);
 
-        this.bindings[event].push({
-          handler: handler,
-          ctx: ctx,
-          once: once
+  var Component$2 = preact.Component;
+
+  var ShepherdFooter =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdFooter, _Component);
+
+    function ShepherdFooter() {
+      return _Component.apply(this, arguments) || this;
+    }
+
+    var _proto = ShepherdFooter.prototype;
+
+    _proto.render = function render(props) {
+      var classPrefix = props.classPrefix,
+          step = props.step,
+          styles = props.styles;
+      var buttons = step.options.buttons;
+      return preact.h("footer", {
+        className: styles.footer.trim()
+      }, this._addButtons(buttons, classPrefix, step, styles));
+    };
+
+    _proto._addButtons = function _addButtons(buttons, classPrefix, step, styles) {
+      if (buttons) {
+        return buttons.map(function (config) {
+          return preact.h(ShepherdButton, {
+            classPrefix: classPrefix,
+            config: config,
+            step: step,
+            styles: styles
+          });
         });
       }
-    }, {
-      key: "once",
-      value: function once(event, handler, ctx) {
-        this.on(event, handler, ctx, true);
-      }
-    }, {
-      key: "off",
-      value: function off(event, handler) {
-        var _this = this;
 
-        if (isUndefined(this.bindings) || isUndefined(this.bindings[event])) {
-          return false;
-        }
-
-        if (isUndefined(handler)) {
-          delete this.bindings[event];
-        } else {
-          this.bindings[event].forEach(function (binding, index) {
-            if (binding.handler === handler) {
-              _this.bindings[event].splice(index, 1);
-            }
-          });
-        }
-      }
-    }, {
-      key: "trigger",
-      value: function trigger(event) {
-        var _this2 = this;
-
-        if (!isUndefined(this.bindings) && this.bindings[event]) {
-          var args = drop(Array.prototype.slice.call(arguments));
-          this.bindings[event].forEach(function (binding, index) {
-            var ctx = binding.ctx,
-                handler = binding.handler,
-                once = binding.once;
-            var context = ctx || _this2;
-            handler.apply(context, args);
-
-            if (once) {
-              _this2.bindings[event].splice(index, 1);
-            }
-          });
-        }
-      }
-    }]);
-
-    return Evented;
-  }();
-
-  /**
-   * lodash (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
-
-  /** `Object#toString` result references. */
-  var objectTag = '[object Object]';
-
-  /**
-   * Checks if `value` is a host object in IE < 9.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
-   */
-  function isHostObject(value) {
-    // Many host objects are `Object` objects that can coerce to strings
-    // despite having improperly defined `toString` methods.
-    var result = false;
-    if (value != null && typeof value.toString != 'function') {
-      try {
-        result = !!(value + '');
-      } catch (e) {}
-    }
-    return result;
-  }
-
-  /**
-   * Creates a unary function that invokes `func` with its argument transformed.
-   *
-   * @private
-   * @param {Function} func The function to wrap.
-   * @param {Function} transform The argument transform.
-   * @returns {Function} Returns the new function.
-   */
-  function overArg(func, transform) {
-    return function(arg) {
-      return func(transform(arg));
+      return null;
     };
-  }
 
-  /** Used for built-in method references. */
-  var funcProto = Function.prototype,
-      objectProto$1 = Object.prototype;
+    return ShepherdFooter;
+  }(Component$2);
 
-  /** Used to resolve the decompiled source of functions. */
-  var funcToString = funcProto.toString;
+  var Component$3 = preact.Component;
 
-  /** Used to check objects for own properties. */
-  var hasOwnProperty$2 = objectProto$1.hasOwnProperty;
+  var ShepherdHeader =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdHeader, _Component);
 
-  /** Used to infer the `Object` constructor. */
-  var objectCtorString = funcToString.call(Object);
+    function ShepherdHeader(props) {
+      var _this;
 
-  /**
-   * Used to resolve the
-   * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
-   * of values.
-   */
-  var objectToString = objectProto$1.toString;
-
-  /** Built-in value references. */
-  var getPrototype = overArg(Object.getPrototypeOf, Object);
-
-  /**
-   * Checks if `value` is likely a DOM element.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a DOM element, else `false`.
-   * @example
-   *
-   * _.isElement(document.body);
-   * // => true
-   *
-   * _.isElement('<body>');
-   * // => false
-   */
-  function isElement(value) {
-    return !!value && value.nodeType === 1 && isObjectLike$1(value) && !isPlainObject(value);
-  }
-
-  /**
-   * Checks if `value` is object-like. A value is object-like if it's not `null`
-   * and has a `typeof` result of "object".
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-   * @example
-   *
-   * _.isObjectLike({});
-   * // => true
-   *
-   * _.isObjectLike([1, 2, 3]);
-   * // => true
-   *
-   * _.isObjectLike(_.noop);
-   * // => false
-   *
-   * _.isObjectLike(null);
-   * // => false
-   */
-  function isObjectLike$1(value) {
-    return !!value && typeof value == 'object';
-  }
-
-  /**
-   * Checks if `value` is a plain object, that is, an object created by the
-   * `Object` constructor or one with a `[[Prototype]]` of `null`.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.8.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
-   * @example
-   *
-   * function Foo() {
-   *   this.a = 1;
-   * }
-   *
-   * _.isPlainObject(new Foo);
-   * // => false
-   *
-   * _.isPlainObject([1, 2, 3]);
-   * // => false
-   *
-   * _.isPlainObject({ 'x': 0, 'y': 0 });
-   * // => true
-   *
-   * _.isPlainObject(Object.create(null));
-   * // => true
-   */
-  function isPlainObject(value) {
-    if (!isObjectLike$1(value) ||
-        objectToString.call(value) != objectTag || isHostObject(value)) {
-      return false;
-    }
-    var proto = getPrototype(value);
-    if (proto === null) {
-      return true;
-    }
-    var Ctor = hasOwnProperty$2.call(proto, 'constructor') && proto.constructor;
-    return (typeof Ctor == 'function' &&
-      Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
-  }
-
-  var lodash_iselement = isElement;
-
-  /**
-   * Sets up the handler to determine if we should advance the tour
-   * @private
-   */
-
-  function _setupAdvanceOnHandler(selector) {
-    var _this = this;
-
-    return function (event) {
-      if (_this.isOpen()) {
-        var targetIsEl = _this.el && event.target === _this.el;
-        var targetIsSelector = !isUndefined(selector) && event.target.matches(selector);
-
-        if (targetIsSelector || targetIsEl) {
-          _this.tour.next();
-        }
-      }
-    };
-  }
-  /**
-   * Bind the event handler for advanceOn
-   */
-
-
-  function bindAdvance() {
-    // An empty selector matches the step element
-    var _parseShorthand = parseShorthand(this.options.advanceOn, ['selector', 'event']),
-        event = _parseShorthand.event,
-        selector = _parseShorthand.selector;
-
-    var handler = _setupAdvanceOnHandler.call(this, selector); // TODO: this should also bind/unbind on show/hide
-
-
-    var el = document.querySelector(selector);
-
-    if (!isUndefined(selector) && el) {
-      el.addEventListener(event, handler);
-    } else {
-      document.body.addEventListener(event, handler, true);
+      _this = _Component.call(this, props) || this;
+      _this.step = props.step;
+      _this.cancelStep = _this.cancelStep.bind(_assertThisInitialized(_this));
+      return _this;
     }
 
-    this.on('destroy', function () {
-      return document.body.removeEventListener(event, handler, true);
-    });
-  }
-  /**
-   * Bind events to the buttons for next, back, etc
-   * @param {Object} cfg An object containing the config options for the button
-   * @param {HTMLElement} el The element for the button
-   */
+    var _proto = ShepherdHeader.prototype;
 
-  function bindButtonEvents(cfg, el) {
-    var _this2 = this;
-
-    cfg.events = cfg.events || {};
-
-    if (!isUndefined(cfg.action)) {
-      // Including both a click event and an action is not supported
-      cfg.events.click = cfg.action;
+    _proto.render = function render(props) {
+      var labelId = props.labelId,
+          step = props.step,
+          styles = props.styles;
+      var _step$options = step.options,
+          showCancelLink = _step$options.showCancelLink,
+          title = _step$options.title;
+      return preact.h("header", {
+        className: styles.header.trim()
+      }, this.constructor._addTitle(labelId, styles, title), this._addCancelLink(showCancelLink, styles));
     }
+    /**
+     * Add a click listener to the cancel link that cancels the tour
+     */
+    ;
 
-    if (cfg.events) {
-      Object.entries(cfg.events).forEach(function (_ref) {
-        var _ref2 = _slicedToArray(_ref, 2),
-            event = _ref2[0],
-            handler = _ref2[1];
-
-        if (isString(handler)) {
-          var page = handler;
-
-          handler = function handler() {
-            return _this2.tour.show(page);
-          };
-        }
-
-        el.dataset.buttonEvent = true;
-        el.addEventListener(event, handler); // Cleanup event listeners on destroy
-
-        _this2.on('destroy', function () {
-          el.removeAttribute('data-button-event');
-          el.removeEventListener(event, handler);
-        });
-      });
-    }
-  }
-  /**
-   * Add a click listener to the cancel link that cancels the tour
-   * @param {HTMLElement} link The cancel link element
-   */
-
-  function bindCancelLink(link) {
-    var _this3 = this;
-
-    link.addEventListener('click', function (e) {
+    _proto.cancelStep = function cancelStep(e) {
       e.preventDefault();
+      this.step.cancel();
+    };
 
-      _this3.cancel();
-    });
-  }
-  /**
-   * Take an array of strings and look up methods by name, then bind them to `this`
-   * @param {String[]} methods The names of methods to bind
-   */
+    ShepherdHeader._addTitle = function _addTitle(labelId, styles, title) {
+      if (title) {
+        return preact.h("h3", {
+          id: labelId,
+          className: styles.title.trim()
+        }, title);
+      }
 
-  function bindMethods(methods) {
-    var _this4 = this;
+      return null;
+    };
 
-    methods.map(function (method) {
-      _this4[method] = _this4[method].bind(_this4);
-    });
-  }
+    _proto._addCancelLink = function _addCancelLink(showCancelLink, styles) {
+      if (showCancelLink) {
+        return preact.h("button", {
+          "aria-label": "Close Tour",
+          className: styles['cancel-link'].trim(),
+          onClick: this.cancelStep,
+          type: "button"
+        }, preact.h("span", {
+          "aria-hidden": "true"
+        }, "\xD7"));
+      }
+
+      return null;
+    };
+
+    return ShepherdHeader;
+  }(Component$3);
+
+  var Component$4 = preact.Component;
+
+  var ShepherdText =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdText, _Component);
+
+    function ShepherdText() {
+      return _Component.apply(this, arguments) || this;
+    }
+
+    var _proto = ShepherdText.prototype;
+
+    _proto.shouldComponentUpdate = function shouldComponentUpdate() {
+      return false;
+    };
+
+    _proto.componentDidMount = function componentDidMount() {
+      var step = this.props.step;
+      var text = step.options.text;
+
+      if (isFunction(text)) {
+        text = text.call(step);
+      }
+
+      if (isElement(text)) {
+        this.base.appendChild(text);
+      }
+    };
+
+    _proto.render = function render(props) {
+      var descriptionId = props.descriptionId,
+          step = props.step,
+          styles = props.styles;
+      var text = step.options.text;
+
+      if (isFunction(text)) {
+        text = text.call(step);
+      }
+
+      return preact.h("div", {
+        className: styles.text.trim(),
+        dangerouslySetInnerHTML: {
+          __html: !isElement(text) ? text : null
+        },
+        id: descriptionId
+      });
+    };
+
+    return ShepherdText;
+  }(Component$4);
+
+  var Component$5 = preact.Component;
+
+  var ShepherdContent =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdContent, _Component);
+
+    function ShepherdContent() {
+      return _Component.apply(this, arguments) || this;
+    }
+
+    var _proto = ShepherdContent.prototype;
+
+    _proto.render = function render(props) {
+      var classPrefix = props.classPrefix,
+          descriptionId = props.descriptionId,
+          labelId = props.labelId,
+          step = props.step,
+          styles = props.styles;
+      return preact.h("div", {
+        className: styles.content.trim()
+      }, preact.h(ShepherdHeader, {
+        labelId: labelId,
+        step: step,
+        styles: styles
+      }), ShepherdContent._addShepherdText(descriptionId, step, styles), ShepherdContent._addShepherdFooter(classPrefix, step, styles));
+    };
+
+    ShepherdContent._addShepherdText = function _addShepherdText(descriptionId, step, styles) {
+      if (!isUndefined(step.options.text)) {
+        return preact.h(ShepherdText, {
+          descriptionId: descriptionId,
+          step: step,
+          styles: styles
+        });
+      }
+
+      return null;
+    };
+
+    ShepherdContent._addShepherdFooter = function _addShepherdFooter(classPrefix, step, styles) {
+      if (Array.isArray(step.options.buttons) && step.options.buttons.length) {
+        return preact.h(ShepherdFooter, {
+          classPrefix: classPrefix,
+          step: step,
+          styles: styles
+        });
+      }
+
+      return null;
+    };
+
+    return ShepherdContent;
+  }(Component$5);
+
+  var Component$6 = preact.Component;
+  var KEY_TAB = 9;
+  var KEY_ESC = 27;
+  var LEFT_ARROW = 37;
+  var RIGHT_ARROW = 39;
+
+  var ShepherdElement =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdElement, _Component);
+
+    function ShepherdElement(props) {
+      var _this;
+
+      _this = _Component.call(this, props) || this;
+      _this.step = props.step;
+      _this.handleKeyDown = _this.handleKeyDown.bind(_assertThisInitialized(_this));
+      return _this;
+    }
+
+    var _proto = ShepherdElement.prototype;
+
+    _proto.componentDidMount = function componentDidMount() {
+      // Get all elements that are focusable
+      var focusableElements = this.element.querySelectorAll('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]');
+      var firstFocusableElement = focusableElements[0];
+      var lastFocusableElement = focusableElements[focusableElements.length - 1];
+      this.focusableElements = focusableElements;
+      this.firstFocusableElement = firstFocusableElement;
+      this.lastFocusableElement = lastFocusableElement;
+    };
+
+    _proto.render = function render(props) {
+      var _dataStepId,
+          _this2 = this;
+
+      var classes = props.classes,
+          classPrefix = props.classPrefix,
+          descriptionId = props.descriptionId,
+          labelId = props.labelId,
+          step = props.step,
+          styles = props.styles;
+      var dataStepId = (_dataStepId = {}, _dataStepId["data-" + classPrefix + "shepherd-step-id"] = step.id, _dataStepId);
+      return preact.h("div", _extends({
+        "aria-describedby": !isUndefined(step.options.text) ? descriptionId : null,
+        "aria-labeledby": step.options.title ? labelId : null,
+        className: classes + styles.element
+      }, dataStepId, {
+        onKeyDown: this.handleKeyDown,
+        ref: function ref(c) {
+          return _this2.element = c;
+        },
+        role: "dialog",
+        tabindex: "0"
+      }), preact.h(ShepherdContent, {
+        classPrefix: classPrefix,
+        descriptionId: descriptionId,
+        labelId: labelId,
+        step: step,
+        styles: styles
+      }));
+    }
+    /**
+     * Setup keydown events to allow closing the modal with ESC
+     *
+     * Borrowed from this great post! https://bitsofco.de/accessible-modal-dialog/
+     *
+     * @private
+     */
+    ;
+
+    _proto.handleKeyDown = function handleKeyDown(e) {
+      switch (e.keyCode) {
+        case KEY_TAB:
+          if (this.focusableElements.length === 1) {
+            e.preventDefault();
+            break;
+          } // Backward tab
+
+
+          if (e.shiftKey) {
+            if (document.activeElement === this.firstFocusableElement) {
+              e.preventDefault();
+              this.lastFocusableElement.focus();
+            }
+          } else {
+            if (document.activeElement === this.lastFocusableElement) {
+              e.preventDefault();
+              this.firstFocusableElement.focus();
+            }
+          }
+
+          break;
+
+        case KEY_ESC:
+          this.step.cancel();
+          break;
+
+        case LEFT_ARROW:
+          this.step.tour.back();
+          break;
+
+        case RIGHT_ARROW:
+          this.step.tour.next();
+          break;
+
+        default:
+          break;
+      }
+    };
+
+    return ShepherdElement;
+  }(Component$6);
 
   if (!Element.prototype.matches) {
       Element.prototype.matches =
           Element.prototype.matchesSelector ||
           Element.prototype.msMatchesSelector ||
           Element.prototype.webkitMatchesSelector;
-  }
-
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
   }
 
   var smoothscroll = createCommonjsModule(function (module, exports) {
@@ -5941,11 +6657,12 @@
   var smoothscroll_1 = smoothscroll.polyfill;
 
   smoothscroll.polyfill();
+  var render$1 = preact.render;
   /**
    * Creates incremented ID for each newly created step
    *
+   * @return {Function} A function that returns the unique id for the step
    * @private
-   * @return {Number} The unique id for the step
    */
 
   var uniqueId = function () {
@@ -5963,40 +6680,30 @@
   var Step =
   /*#__PURE__*/
   function (_Evented) {
-    _inherits(Step, _Evented);
+    _inheritsLoose(Step, _Evented);
 
     /**
      * Create a step
      * @param {Tour} tour The tour for the step
      * @param {Object} options The options for the step
-     * @param {Object|string} options.attachTo What element the step should be attached to on the page.
-     * It can either be a string of the form `[element] [on]` (where [element] is an element selector path):
-     * ```js
-     * const new Step(tour, {
-     *   attachTo: '.some .selector-path left',
-     *   ...moreOptions,
-     * })'
-     * ```
-     * Or an object with those properties:
+     * @param {Object} options.attachTo What element the step should be attached to on the page.
+     * It should be an object with the properties `element` and `on`, where `element` is an element selector string
+     * or a DOM element and `on` is the optional direction to place the Tippy tooltip.
+     *
      * ```js
      * const new Step(tour, {
      *   attachTo: { element: '.some .selector-path', on: 'left' },
      *   ...moreOptions
      * })'
      * ```
-     * If you use the object syntax, element can also be a DOM element. If you don’t specify an attachTo the
-     * element will appear in the middle of the screen.
+     *
+     * If you don’t specify an attachTo the element will appear in the middle of the screen.
+     * If you omit the `on` portion of `attachTo`, the element will still be highlighted, but the tooltip will appear
+     * in the middle of the screen, without an arrow pointing to the target.
      * @param {HTMLElement|string} options.attachTo.element
      * @param {string} options.attachTo.on
-     * @param {Object|string} options.advanceOn An action on the page which should advance shepherd to the next step.
-     * It can be of the form `"selector event"`:
-     * ```js
-     * const new Step(tour, {
-     *   advanceOn: '.some .selector-path click',
-     *   ...moreOptions
-     * })'
-     * ```
-     * ...or an object with those properties:
+     * @param {Object} options.advanceOn An action on the page which should advance shepherd to the next step.
+     * It should be an object with a string `selector` and an `event` name
      * ```js
      * const new Step(tour, {
      *   advanceOn: { selector: '.some .selector-path', event: 'click' },
@@ -6009,22 +6716,23 @@
      * When the promise resolves, the rest of the `show` code for the step will execute.
      * @param {Object[]} options.buttons An array of buttons to add to the step. These will be rendered in a
      * footer below the main body text.
-     * @param {function} options.buttons.button.action A function executed when the button is clicked on
-     * @param {string} options.buttons.button.classes Extra classes to apply to the `<a>`
-     * @param {Object} options.buttons.button.events A hash of events to bind onto the button, for example
-     * `{'mouseover': function(){}}`. Adding a `click` event to events when you already have an `action` specified is not supported.
-     * You can use events to skip steps or navigate to specific steps, with something like:
+     * @param {function} options.buttons.button.action A function executed when the button is clicked on.
+     * It is automatically bound to the `tour` the step is associated with, so things like `this.next` will
+     * work inside the action.
+     * You can use action to skip steps or navigate to specific steps, with something like:
      * ```js
-     * events: {
-     *   click: function() {
-     *     return Shepherd.activeTour.show('some_step_name');
-     *   }
+     * action() {
+     *   return this.show('some_step_name');
      * }
      * ```
+     * @param {string} options.buttons.button.classes Extra classes to apply to the `<a>`
+     * @param {boolean} options.buttons.button.secondary If true, a shepherd-button-secondary class is applied to the button
      * @param {string} options.buttons.button.text The HTML text of the button
+     * @param {boolean} options.canClickTarget A boolean, that when set to false, will set `pointer-events: none` on the target
      * @param {string} options.classes A string of extra classes to add to the step's content element.
      * @param {string} options.highlightClass An extra class to apply to the `attachTo` element when it is
      * highlighted (that is, when its step is active). You can then target that selector in your CSS.
+     * @param {string} options.id The string to use as the `id` for the step.
      * @param {Object} options.tippyOptions Extra [options to pass to tippy.js]{@link https://atomiks.github.io/tippyjs/#all-options}
      * @param {boolean|Object} options.scrollTo Should the element be scrolled to when this step is shown? If true, uses the default `scrollIntoView`,
      * if an object, passes that object as the params to `scrollIntoView` i.e. `{behavior: 'smooth', block: 'center'}`
@@ -6033,12 +6741,11 @@
      * @param {boolean} options.showCancelLink Should a cancel “✕” be shown in the header of the step?
      * @param {function} options.showOn A function that, when it returns `true`, will show the step.
      * If it returns false, the step will be skipped.
-     * @param {string} options.text The text in the body of the step. It can be one of four types:
+     * @param {string} options.text The text in the body of the step. It can be one of three types:
      * ```
      * - HTML string
-     * - Array of HTML strings
      * - `HTMLElement` object
-     * - `Function` to be executed when the step is built. It must return one of the three options above.
+     * - `Function` to be executed when the step is built. It must return one the two options above.
      * ```
      * @param {string} options.title The step's title. It becomes an `h3` at the top of the step.
      * @param {Object} options.when You can define `show`, `hide`, etc events inside `when`. For example:
@@ -6055,1147 +6762,297 @@
     function Step(tour, options) {
       var _this;
 
-      _classCallCheck(this, Step);
+      if (options === void 0) {
+        options = {};
+      }
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Step).call(this, tour, options));
+      _this = _Evented.call(this, tour, options) || this;
       _this.tour = tour;
-      bindMethods.call(_assertThisInitialized(_this), ['_show', 'cancel', 'complete', 'destroy', 'hide', 'isOpen', 'scrollTo', 'setupElements', 'show']);
+      _this.classPrefix = _this.tour.options ? normalizePrefix(_this.tour.options.classPrefix) : '';
+      _this.styles = tour.styles;
+      autoBind(_assertThisInitialized(_this));
 
-      _this.setOptions(options);
+      _this._setOptions(options);
 
-      _this.bindAdvance = bindAdvance.bind(_assertThisInitialized(_this));
-      _this.bindButtonEvents = bindButtonEvents.bind(_assertThisInitialized(_this));
-      _this.bindCancelLink = bindCancelLink.bind(_assertThisInitialized(_this));
-      _this.setupTooltip = setupTooltip.bind(_assertThisInitialized(_this));
-      _this.parseAttachTo = parseAttachTo.bind(_assertThisInitialized(_this));
-      return _possibleConstructorReturn(_this, _assertThisInitialized(_this));
+      return _assertThisInitialized(_this) || _assertThisInitialized(_this);
     }
     /**
-     * Adds buttons to the step as passed into options
-     *
-     * @private
-     * @param {HTMLElement} content The element for the step, to append the footer with buttons to
+     * Cancel the tour
+     * Triggers the `cancel` event
      */
 
 
-    _createClass(Step, [{
-      key: "_addButtons",
-      value: function _addButtons(content) {
-        var _this2 = this;
+    var _proto = Step.prototype;
 
-        if (Array.isArray(this.options.buttons) && this.options.buttons.length) {
-          var footer = document.createElement('footer');
-          footer.classList.add('shepherd-footer');
-          this.options.buttons.map(function (cfg) {
-            var button = createFromHTML("<button class=\"shepherd-button ".concat(cfg.classes || '', "\" tabindex=\"0\">").concat(cfg.text, "</button>"));
-            footer.appendChild(button);
+    _proto.cancel = function cancel() {
+      this.tour.cancel();
+      this.trigger('cancel');
+    }
+    /**
+     * Complete the tour
+     * Triggers the `complete` event
+     */
+    ;
 
-            _this2.bindButtonEvents(cfg, button);
+    _proto.complete = function complete() {
+      this.tour.complete();
+      this.trigger('complete');
+    }
+    /**
+     * Remove the step, delete the step's element, and destroy the tippy instance for the step
+     * Triggers `destroy` event
+     */
+    ;
+
+    _proto.destroy = function destroy() {
+      if (this.tooltip) {
+        this.tooltip.destroy();
+        this.tooltip = null;
+      }
+
+      if (isElement(this.el) && this.el.parentNode) {
+        this.el.parentNode.removeChild(this.el);
+        this.el = null;
+      }
+
+      if (this.target) {
+        this._updateStepTargetOnHide();
+      }
+
+      this.trigger('destroy');
+    }
+    /**
+     * Returns the tour for the step
+     * @return {Tour} The tour instance
+     */
+    ;
+
+    _proto.getTour = function getTour() {
+      return this.tour;
+    }
+    /**
+     * Hide the step and destroy the tippy instance
+     */
+    ;
+
+    _proto.hide = function hide() {
+      this.tour.modal.hide();
+      this.trigger('before-hide');
+      document.body.removeAttribute("data-" + this.classPrefix + "shepherd-step");
+
+      if (this.target) {
+        this._updateStepTargetOnHide();
+      }
+
+      if (this.tooltip) {
+        this.tooltip.hide();
+      }
+
+      this.trigger('hide');
+    }
+    /**
+     * Check if the step is open and visible
+     * @return {boolean} True if the step is open and visible
+     */
+    ;
+
+    _proto.isOpen = function isOpen() {
+      return Boolean(this.tooltip && this.tooltip.state && this.tooltip.state.isVisible);
+    }
+    /**
+     * Wraps `_show` and ensures `beforeShowPromise` resolves before calling show
+     * @return {*|Promise}
+     */
+    ;
+
+    _proto.show = function show() {
+      var _this2 = this;
+
+      if (isFunction(this.options.beforeShowPromise)) {
+        var beforeShowPromise = this.options.beforeShowPromise();
+
+        if (!isUndefined(beforeShowPromise)) {
+          return beforeShowPromise.then(function () {
+            return _this2._show();
           });
-          content.appendChild(footer);
         }
       }
-      /**
-       * Adds the "x" button to cancel the tour
-       * @param {HTMLElement} element The step element
-       * @param {HTMLElement} header The header element for the step
-       * @private
-       */
 
-    }, {
-      key: "_addCancelLink",
-      value: function _addCancelLink(element, header) {
-        if (this.options.showCancelLink) {
-          var link = createFromHTML('<a href class="shepherd-cancel-link"></a>');
-          header.appendChild(link);
-          element.classList.add('shepherd-has-cancel-link');
-          this.bindCancelLink(link);
-        }
+      this._show();
+    }
+    /**
+     * Creates Shepherd element for step based on options
+     *
+     * @return {Element} The DOM element for the step tooltip
+     * @private
+     */
+    ;
+
+    _proto._createTooltipContent = function _createTooltipContent() {
+      var classes = this.options.classes || '';
+      var descriptionId = this.id + "-description";
+      var labelId = this.id + "-label";
+
+      if (this.options.showCancelLink) {
+        classes += " " + this.classPrefix + "shepherd-has-cancel-link";
       }
-      /**
-       * Adds text passed in as options
-       *
-       * @private
-       * @param {HTMLElement} content The content to append the text to
-       * @param {string} descriptionId The id to set on the shepherd-text element
-       * for the parent element to use for aria-describedby
-       */
 
-    }, {
-      key: "_addContent",
-      value: function _addContent(content, descriptionId) {
-        var text = createFromHTML("<div class=\"shepherd-text\"\n       id=\"".concat(descriptionId, "\"\n       ></div>"));
-        var paragraphs = this.options.text;
+      return render$1(preact.h(ShepherdElement, {
+        classPrefix: this.classPrefix,
+        classes: classes,
+        descriptionId: descriptionId,
+        labelId: labelId,
+        step: this,
+        styles: this.styles
+      }), null);
+    }
+    /**
+     * If a custom scrollToHandler is defined, call that, otherwise do the generic
+     * scrollIntoView call.
+     *
+     * @param {boolean|Object} scrollToOptions If true, uses the default `scrollIntoView`,
+     * if an object, passes that object as the params to `scrollIntoView` i.e. `{ behavior: 'smooth', block: 'center' }`
+     * @private
+     */
+    ;
 
-        if (isFunction(paragraphs)) {
-          paragraphs = paragraphs.call(this, text);
-        }
+    _proto._scrollTo = function _scrollTo(scrollToOptions) {
+      var _parseAttachTo = parseAttachTo(this),
+          element = _parseAttachTo.element;
 
-        if (paragraphs instanceof HTMLElement) {
-          text.appendChild(paragraphs);
-        } else {
-          if (isString(paragraphs)) {
-            paragraphs = [paragraphs];
-          }
-
-          paragraphs.map(function (paragraph) {
-            text.innerHTML += "<p>".concat(paragraph, "</p>");
-          });
-        }
-
-        content.appendChild(text);
+      if (isFunction(this.options.scrollToHandler)) {
+        this.options.scrollToHandler(element);
+      } else if (isElement(element)) {
+        element.scrollIntoView(scrollToOptions);
       }
-      /**
-       * Setup keydown events to allow closing the modal with ESC
-       *
-       * Borrowed from this great post! https://bitsofco.de/accessible-modal-dialog/
-       *
-       * @param {HTMLElement} element The element for the tooltip
-       * @private
-       */
+    }
+    /**
+     * Sets the options for the step, maps `when` to events, sets up buttons
+     * @param {Object} options The options for the step
+     * @private
+     */
+    ;
 
-    }, {
-      key: "_addKeyDownHandler",
-      value: function _addKeyDownHandler(element) {
-        var _this3 = this;
+    _proto._setOptions = function _setOptions(options) {
+      var _this3 = this;
 
-        var KEY_TAB = 9;
-        var KEY_ESC = 27;
-        var LEFT_ARROW = 37;
-        var RIGHT_ARROW = 39; // Get all elements that are focusable
+      if (options === void 0) {
+        options = {};
+      }
 
-        var focusableElements = element.querySelectorAll('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex="0"]');
+      this.options = options;
+      var when = this.options.when;
+      this.destroy();
+      this.id = this.options.id || "step-" + uniqueId();
 
-        var _focusableElements = _slicedToArray(focusableElements, 1),
-            firstFocusableElement = _focusableElements[0];
-
-        var lastFocusableElement = focusableElements[focusableElements.length - 1];
-        element.addEventListener('keydown', function (e) {
-          switch (e.keyCode) {
-            case KEY_TAB:
-              if (focusableElements.length === 1) {
-                e.preventDefault();
-                break;
-              } // Backward tab
-
-
-              if (e.shiftKey) {
-                if (document.activeElement === firstFocusableElement) {
-                  e.preventDefault();
-                  lastFocusableElement.focus();
-                }
-              } else {
-                if (document.activeElement === lastFocusableElement) {
-                  e.preventDefault();
-                  firstFocusableElement.focus();
-                }
-              }
-
-              break;
-
-            case KEY_ESC:
-              _this3.cancel();
-
-              break;
-
-            case LEFT_ARROW:
-              _this3.tour.back();
-
-              break;
-
-            case RIGHT_ARROW:
-              _this3.tour.next();
-
-              break;
-
-            default:
-              break;
-          }
+      if (when) {
+        Object.keys(when).forEach(function (event) {
+          _this3.on(event, when[event], _this3);
         });
       }
-      /**
-       * Creates Shepherd element for step based on options
-       *
-       * @private
-       * @return {HTMLElement} The DOM element for the step tooltip
-       */
+    }
+    /**
+     * Create the element and set up the tippy instance
+     * @private
+     */
+    ;
 
-    }, {
-      key: "_createTooltipContent",
-      value: function _createTooltipContent() {
-        var content = document.createElement('div');
-        var classes = this.options.classes || '';
-        var descriptionId = "".concat(this.id, "-description");
-        var labelId = "".concat(this.id, "-label");
-        var element = createFromHTML("<div class=\"".concat(classes, "\"\n       data-shepherd-step-id=\"").concat(this.id, "\"\n       role=\"dialog\"\n       tabindex=\"0\">"));
-        var header = document.createElement('header');
-
-        if (this.options.title) {
-          var title = document.createElement('h3');
-          title.classList.add('shepherd-title');
-          title.innerHTML = "".concat(this.options.title);
-          title.id = labelId;
-          element.setAttribute('aria-labeledby', labelId);
-          header.appendChild(title);
-          element.classList.add('shepherd-has-title');
-        }
-
-        content.classList.add('shepherd-content');
-        header.classList.add('shepherd-header');
-        element.appendChild(content);
-        content.appendChild(header);
-
-        if (!isUndefined(this.options.text)) {
-          this._addContent(content, descriptionId);
-
-          element.setAttribute('aria-describedby', descriptionId);
-        }
-
-        this._addButtons(content);
-
-        this._addCancelLink(element, header);
-
-        return element;
-      }
-      /**
-       * Returns the tour for the step
-       * @return {Tour} The tour instance
-       */
-
-    }, {
-      key: "getTour",
-      value: function getTour() {
-        return this.tour;
-      }
-      /**
-       * Cancel the tour
-       * Triggers the `cancel` event
-       */
-
-    }, {
-      key: "cancel",
-      value: function cancel() {
-        this.tour.cancel();
-        this.trigger('cancel');
-      }
-      /**
-       * Complete the tour
-       * Triggers the `complete` event
-       */
-
-    }, {
-      key: "complete",
-      value: function complete() {
-        this.tour.complete();
-        this.trigger('complete');
-      }
-      /**
-       * Remove the step, delete the step's element, and destroy the tippy instance for the step
-       * Triggers `destroy` event
-       */
-
-    }, {
-      key: "destroy",
-      value: function destroy() {
-        if (this.tooltip) {
-          this.tooltip.destroy();
-          this.tooltip = null;
-        }
-
-        if (lodash_iselement(this.el) && this.el.parentNode) {
-          this.el.parentNode.removeChild(this.el);
-          this.el = null;
-        }
-
-        if (this.target) {
-          this._updateStepTargetOnHide();
-        }
-
-        this.trigger('destroy');
-      }
-      /**
-       * Hide the step and destroy the tippy instance
-       */
-
-    }, {
-      key: "hide",
-      value: function hide() {
-        this.tour.modal.hide();
-        this.trigger('before-hide');
-        document.body.removeAttribute('data-shepherd-step');
-
-        if (this.target) {
-          this._updateStepTargetOnHide();
-        }
-
-        if (this.tooltip) {
-          this.tooltip.hide();
-        }
-
-        this.trigger('hide');
-      }
-      /**
-       * Check if the step is open and visible
-       * @return {boolean} True if the step is open and visible
-       */
-
-    }, {
-      key: "isOpen",
-      value: function isOpen() {
-        return Boolean(this.tooltip && this.tooltip.state && this.tooltip.state.isVisible);
-      }
-      /**
-       * Create the element and set up the tippy instance
-       */
-
-    }, {
-      key: "setupElements",
-      value: function setupElements() {
-        if (!isUndefined(this.el)) {
-          this.destroy();
-        }
-
-        this.el = this._createTooltipContent();
-
-        if (this.options.advanceOn) {
-          this.bindAdvance();
-        }
-
-        this.setupTooltip();
-      }
-      /**
-       * If a custom scrollToHandler is defined, call that, otherwise do the generic
-       * scrollIntoView call.
-       *
-       * @param {boolean|Object} scrollToOptions If true, uses the default `scrollIntoView`,
-       * if an object, passes that object as the params to `scrollIntoView` i.e. `{ behavior: 'smooth', block: 'center' }`
-       */
-
-    }, {
-      key: "scrollTo",
-      value: function scrollTo(scrollToOptions) {
-        var _this$parseAttachTo = this.parseAttachTo(),
-            element = _this$parseAttachTo.element;
-
-        if (isFunction(this.options.scrollToHandler)) {
-          this.options.scrollToHandler(element);
-        } else if (lodash_iselement(element)) {
-          element.scrollIntoView(scrollToOptions);
-        }
-      }
-      /**
-       * Sets the options for the step, maps `when` to events, sets up buttons
-       * @param {Object} options The options for the step
-       */
-
-    }, {
-      key: "setOptions",
-      value: function setOptions() {
-        var _this4 = this;
-
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        this.options = options;
-        var when = this.options.when;
+    _proto._setupElements = function _setupElements() {
+      if (!isUndefined(this.el)) {
         this.destroy();
-        this.id = this.options.id || "step-".concat(uniqueId());
-
-        if (when) {
-          Object.entries(when).forEach(function (_ref) {
-            var _ref2 = _slicedToArray(_ref, 2),
-                event = _ref2[0],
-                handler = _ref2[1];
-
-            _this4.on(event, handler, _this4);
-          });
-        }
       }
-      /**
-       * Wraps `_show` and ensures `beforeShowPromise` resolves before calling show
-       * @return {*|Promise}
-       */
 
-    }, {
-      key: "show",
-      value: function show() {
-        var _this5 = this;
+      this.el = this._createTooltipContent();
 
-        if (isFunction(this.options.beforeShowPromise)) {
-          var beforeShowPromise = this.options.beforeShowPromise();
-
-          if (!isUndefined(beforeShowPromise)) {
-            return beforeShowPromise.then(function () {
-              return _this5._show();
-            });
-          }
-        }
-
-        this._show();
+      if (this.options.advanceOn) {
+        bindAdvance(this);
       }
-      /**
-       * Triggers `before-show`, generates the tooltip DOM content,
-       * sets up a tippy instance for the tooltip, then triggers `show`.
-       * @private
-       */
 
-    }, {
-      key: "_show",
-      value: function _show() {
-        var _this6 = this;
+      setupTooltip(this);
+    }
+    /**
+     * Triggers `before-show`, generates the tooltip DOM content,
+     * sets up a tippy instance for the tooltip, then triggers `show`.
+     * @private
+     */
+    ;
 
-        this.tour.beforeShowStep(this);
-        this.trigger('before-show');
+    _proto._show = function _show() {
+      var _this4 = this;
 
-        if (!this.el) {
-          this.setupElements();
-        }
+      this.trigger('before-show');
 
-        this.target.classList.add('shepherd-enabled', 'shepherd-target');
-        document.body.setAttribute('data-shepherd-step', this.id);
-
-        if (this.options.scrollTo) {
-          setTimeout(function () {
-            _this6.scrollTo(_this6.options.scrollTo);
-          });
-        }
-
-        this.tooltip.show();
-        this.trigger('show');
-
-        this._addKeyDownHandler(this.el);
-
-        this.el.focus();
+      if (!this.el) {
+        this._setupElements();
       }
-      /**
-       * When a step is hidden, remove the highlightClass and 'shepherd-enabled'
-       * and 'shepherd-target' classes
-       * @private
-       */
 
-    }, {
-      key: "_updateStepTargetOnHide",
-      value: function _updateStepTargetOnHide() {
-        if (this.options.highlightClass) {
-          this.target.classList.remove(this.options.highlightClass);
-        }
+      this.tour.modal.setupForStep(this);
 
-        this.target.classList.remove('shepherd-enabled', 'shepherd-target');
+      this._styleTargetElementForStep(this);
+
+      var target = this.target || document.body;
+      target.classList.add(this.classPrefix + "shepherd-enabled", this.classPrefix + "shepherd-target");
+      document.body.setAttribute("data-" + this.classPrefix + "shepherd-step", this.id);
+
+      if (this.options.scrollTo) {
+        setTimeout(function () {
+          _this4._scrollTo(_this4.options.scrollTo);
+        });
       }
-    }]);
+
+      this.tooltip.show();
+      this.trigger('show');
+      this.el.focus();
+    }
+    /**
+     * Modulates the styles of the passed step's target element, based on the step's options and
+     * the tour's `modal` option, to visually emphasize the element
+     *
+     * @param step The step object that attaches to the element
+     * @private
+     */
+    ;
+
+    _proto._styleTargetElementForStep = function _styleTargetElementForStep(step) {
+      var targetElement = step.target;
+
+      if (!targetElement) {
+        return;
+      }
+
+      toggleShepherdModalClass(targetElement, step.classPrefix);
+
+      if (step.options.highlightClass) {
+        targetElement.classList.add(step.options.highlightClass);
+      }
+
+      if (step.options.canClickTarget === false) {
+        targetElement.style.pointerEvents = 'none';
+      }
+    }
+    /**
+     * When a step is hidden, remove the highlightClass and 'shepherd-enabled'
+     * and 'shepherd-target' classes
+     * @private
+     */
+    ;
+
+    _proto._updateStepTargetOnHide = function _updateStepTargetOnHide() {
+      if (this.options.highlightClass) {
+        this.target.classList.remove(this.options.highlightClass);
+      }
+
+      this.target.classList.remove(this.classPrefix + "shepherd-enabled", this.classPrefix + "shepherd-target");
+    };
 
     return Step;
   }(Evented);
 
-  var svgNS = 'http://www.w3.org/2000/svg';
-  var elementIds = {
-    modalOverlay: 'shepherdModalOverlayContainer',
-    modalOverlayMask: 'shepherdModalMask',
-    modalOverlayMaskRect: 'shepherdModalMaskRect',
-    modalOverlayMaskOpening: 'shepherdModalMaskOpening'
-  };
-  var classNames = {
-    isVisible: 'shepherd-modal-is-visible',
-    modalTarget: 'shepherd-modal-target'
-  };
-  /**
-   * <svg id="shepherdModalOverlayContainer" xmlns="http://www.w3.org/2000/svg">
-   */
-
-  function _createModalContainer() {
-    var element = document.createElementNS(svgNS, 'svg');
-    element.setAttributeNS(null, 'id', elementIds.modalOverlay);
-    return element;
-  }
-  /**
-   * <mask id="shepherdModalMask" x="0" y="0" width="100%" height="100%">
-   */
-
-
-  function _createMaskContainer() {
-    var element = document.createElementNS(svgNS, 'mask');
-
-    _setAttributes(element, {
-      height: '100%',
-      id: elementIds.modalOverlayMask,
-      width: '100%',
-      x: '0',
-      y: '0'
-    });
-
-    return element;
-  }
-  /**
-   *  <rect id="modalOverlayMaskRect" x="0" y="0" width="100%" height="100%" fill="#FFFFFF"/>
-   */
-
-
-  function _createMaskRect() {
-    var element = document.createElementNS(svgNS, 'rect');
-
-    _setAttributes(element, {
-      fill: '#FFFFFF',
-      height: '100%',
-      id: elementIds.modalOverlayMaskRect,
-      width: '100%',
-      x: '0',
-      y: '0'
-    });
-
-    return element;
-  }
-  /**
-   * <rect id="shepherdModalMaskOpening" fill="#000000"/>
-   */
-
-
-  function _createMaskOpening() {
-    var element = document.createElementNS(svgNS, 'rect');
-
-    _setAttributes(element, {
-      fill: '#000000',
-      id: elementIds.modalOverlayMaskOpening
-    });
-
-    return element;
-  }
-  /**
-   * <rect x="0" y="0" width="100%" height="100%" mask="url(#shepherdModalMask)"/>
-   */
-
-
-  function _createMaskConsumer() {
-    var element = document.createElementNS(svgNS, 'rect');
-
-    _setAttributes(element, {
-      height: '100%',
-      width: '100%',
-      x: '0',
-      y: '0'
-    });
-
-    element.setAttribute('mask', "url(#".concat(elementIds.modalOverlayMask, ")"));
-    return element;
-  }
-  /**
-   * Generates an SVG with the following structure:
-   * ```html
-   *  <svg id="shepherdModalOverlayContainer" xmlns="http://www.w3.org/2000/svg">
-   <defs>
-   <mask id="shepherdModalMask" x="0" y="0" width="100%" height="100%" >
-   <rect x="0" y="0" width="100%" height="100%" fill="#FFFFFF"/>
-   <!-- This element will "punch a hole" through the mask by preventing it from rendering within the perimeter -->
-   <rect id="shepherdModalMaskOpening"/>
-   </mask>
-   </defs>
-   <rect x="0" y="0" width="100%" height="100%" mask="url(#shepherdModalMask)"/>
-   </svg>
-   * ```
-   */
-
-
-  function createModalOverlay() {
-    var containerElement = _createModalContainer();
-
-    var defsElement = document.createElementNS(svgNS, 'defs');
-
-    var maskContainer = _createMaskContainer();
-
-    var maskRect = _createMaskRect();
-
-    var maskOpening = _createMaskOpening();
-
-    var maskConsumer = _createMaskConsumer();
-
-    maskContainer.appendChild(maskRect);
-    maskContainer.appendChild(maskOpening);
-    defsElement.appendChild(maskContainer);
-    containerElement.appendChild(defsElement);
-    containerElement.appendChild(maskConsumer);
-    return containerElement;
-  }
-  /**
-   * Uses the bounds of the element we want the opening overtop of to set the dimensions of the opening and position it
-   * @param {HTMLElement} targetElement The element the opening will expose
-   * @param {SVGElement} openingElement The svg mask for the opening
-   * @param {Number} modalOverlayOpeningPadding An amount of padding to add around the modal overlay opening
-   */
-
-
-  function positionModalOpening(targetElement, openingElement) {
-    var modalOverlayOpeningPadding = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-
-    if (targetElement.getBoundingClientRect && openingElement instanceof SVGElement) {
-      var _targetElement$getBou = targetElement.getBoundingClientRect(),
-          x = _targetElement$getBou.x,
-          y = _targetElement$getBou.y,
-          width = _targetElement$getBou.width,
-          height = _targetElement$getBou.height,
-          left = _targetElement$getBou.left,
-          top = _targetElement$getBou.top; // getBoundingClientRect is not consistent. Some browsers use x and y, while others use left and top
-
-
-      _setAttributes(openingElement, {
-        x: (x || left) - modalOverlayOpeningPadding,
-        y: (y || top) - modalOverlayOpeningPadding,
-        width: width + modalOverlayOpeningPadding * 2,
-        height: height + modalOverlayOpeningPadding * 2
-      });
-    }
-  }
-
-  function closeModalOpening(openingElement) {
-    if (openingElement && openingElement instanceof SVGElement) {
-      _setAttributes(openingElement, {
-        height: '0',
-        x: '0',
-        y: '0',
-        width: '0'
-      });
-    }
-  }
-
-  function getModalMaskOpening(modalElement) {
-    return modalElement.querySelector("#".concat(elementIds.modalOverlayMaskOpening));
-  }
-
-  function preventModalBodyTouch(event) {
-    event.preventDefault();
-  }
-
-  function preventModalOverlayTouch(event) {
-    event.stopPropagation();
-  }
-  /**
-   * Remove any leftover modal target classes and add the modal target class to the currentElement
-   * @param {HTMLElement} currentElement The element for the current step
-   */
-
-
-  function toggleShepherdModalClass(currentElement) {
-    var shepherdModal = document.querySelector("".concat(classNames.modalTarget));
-
-    if (shepherdModal) {
-      shepherdModal.classList.remove(classNames.modalTarget);
-    }
-
-    currentElement.classList.add(classNames.modalTarget);
-  }
-  /**
-   * Set multiple attributes on an element, via a hash
-   * @param {HTMLElement|SVGElement} el The element to set the attributes on
-   * @param {Object} attrs A hash of key value pairs for attributes to set
-   * @private
-   */
-
-
-  function _setAttributes(el, attrs) {
-    Object.keys(attrs).forEach(function (key) {
-      el.setAttribute(key, attrs[key]);
-    });
-  }
-
-  /**
-   * Get the element from an option object
-   *
-   * @method getElementFromObject
-   * @param Object attachTo
-   * @returns {Element}
-   * @private
-   */
-
-
-  function getElementFromObject(attachTo) {
-    var op = attachTo.element;
-
-    if (op instanceof HTMLElement) {
-      return op;
-    }
-
-    return document.querySelector(op);
-  }
-  /**
-   * Return the element for a step
-   *
-   * @method getElementForStep
-   * @param step step the step to get an element for
-   * @returns {Element} the element for this step
-   * @private
-   */
-
-
-  function getElementForStep(step) {
-    var attachTo = step.options.attachTo;
-
-    if (!attachTo) {
-      return null;
-    }
-
-    var type = _typeof(attachTo);
-
-    var element;
-
-    if (type === 'string') {
-      element = getElementFromString(attachTo);
-    } else if (type === 'object') {
-      element = getElementFromObject(attachTo);
-    } else {
-      /* istanbul ignore next: cannot test undefined attachTo, but it does work! */
-      element = null;
-    }
-
-    return element;
-  }
-  /**
-   * Get the element from an option string
-   *
-   * @method getElementFromString
-   * @param element the string in the step configuration
-   * @returns {Element} the element from the string
-   * @private
-   */
-
-
-  function getElementFromString(element) {
-    var _element$split = element.split(' '),
-        _element$split2 = _slicedToArray(_element$split, 1),
-        selector = _element$split2[0];
-
-    return document.querySelector(selector);
-  }
-
-  function addStepEventListeners() {
-    if (typeof this._onScreenChange === 'function') {
-      window.removeEventListener('resize', this._onScreenChange, false);
-      window.removeEventListener('scroll', this._onScreenChange, true);
-    }
-
-    window.addEventListener('resize', this._onScreenChange, false);
-    window.addEventListener('scroll', this._onScreenChange, true);
-    var overlay = document.querySelector("#".concat(elementIds.modalOverlay)); // Prevents window from moving on touch.
-
-    window.addEventListener('touchmove', preventModalBodyTouch, {
-      passive: false
-    }); // Allows content to move on touch.
-
-    if (overlay) {
-      overlay.addEventListener('touchmove', preventModalOverlayTouch, false);
-    }
-  }
-
-  /**
-   * lodash (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright jQuery Foundation and other contributors <https://jquery.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
-
-  /** Used as the `TypeError` message for "Functions" methods. */
-  var FUNC_ERROR_TEXT = 'Expected a function';
-
-  /**
-   * A faster alternative to `Function#apply`, this function invokes `func`
-   * with the `this` binding of `thisArg` and the arguments of `args`.
-   *
-   * @private
-   * @param {Function} func The function to invoke.
-   * @param {*} thisArg The `this` binding of `func`.
-   * @param {Array} args The arguments to invoke `func` with.
-   * @returns {*} Returns the result of `func`.
-   */
-  function apply(func, thisArg, args) {
-    switch (args.length) {
-      case 0: return func.call(thisArg);
-      case 1: return func.call(thisArg, args[0]);
-      case 2: return func.call(thisArg, args[0], args[1]);
-      case 3: return func.call(thisArg, args[0], args[1], args[2]);
-    }
-    return func.apply(thisArg, args);
-  }
-
-  /* Built-in method references for those with the same name as other `lodash` methods. */
-  var nativeMax = Math.max;
-
-  /**
-   * The base implementation of `_.delay` and `_.defer` which accepts `args`
-   * to provide to `func`.
-   *
-   * @private
-   * @param {Function} func The function to delay.
-   * @param {number} wait The number of milliseconds to delay invocation.
-   * @param {Array} args The arguments to provide to `func`.
-   * @returns {number} Returns the timer id.
-   */
-  function baseDelay(func, wait, args) {
-    if (typeof func != 'function') {
-      throw new TypeError(FUNC_ERROR_TEXT);
-    }
-    return setTimeout(function() { func.apply(undefined, args); }, wait);
-  }
-
-  /**
-   * The base implementation of `_.rest` which doesn't validate or coerce arguments.
-   *
-   * @private
-   * @param {Function} func The function to apply a rest parameter to.
-   * @param {number} [start=func.length-1] The start position of the rest parameter.
-   * @returns {Function} Returns the new function.
-   */
-  function baseRest(func, start) {
-    start = nativeMax(start === undefined ? (func.length - 1) : start, 0);
-    return function() {
-      var args = arguments,
-          index = -1,
-          length = nativeMax(args.length - start, 0),
-          array = Array(length);
-
-      while (++index < length) {
-        array[index] = args[start + index];
-      }
-      index = -1;
-      var otherArgs = Array(start + 1);
-      while (++index < start) {
-        otherArgs[index] = args[index];
-      }
-      otherArgs[start] = array;
-      return apply(func, this, otherArgs);
-    };
-  }
-
-  /**
-   * Defers invoking the `func` until the current call stack has cleared. Any
-   * additional arguments are provided to `func` when it's invoked.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Function
-   * @param {Function} func The function to defer.
-   * @param {...*} [args] The arguments to invoke `func` with.
-   * @returns {number} Returns the timer id.
-   * @example
-   *
-   * _.defer(function(text) {
-   *   console.log(text);
-   * }, 'deferred');
-   * // => Logs 'deferred' after one or more milliseconds.
-   */
-  var defer = baseRest(function(func, args) {
-    return baseDelay(func, 1, args);
+  var bodyScrollLock_min = createCommonjsModule(function (module, exports) {
+  !function(e,t){t(exports);}(commonjsGlobal,function(exports){function r(e){if(Array.isArray(e)){for(var t=0,o=Array(e.length);t<e.length;t++)o[t]=e[t];return o}return Array.from(e)}Object.defineProperty(exports,"__esModule",{value:!0});var l=!1;if("undefined"!=typeof window){var e={get passive(){l=!0;}};window.addEventListener("testPassive",null,e),window.removeEventListener("testPassive",null,e);}var d="undefined"!=typeof window&&window.navigator&&window.navigator.platform&&/iP(ad|hone|od)/.test(window.navigator.platform),c=[],u=!1,a=-1,s=void 0,v=void 0,f=function(t){return c.some(function(e){return !(!e.options.allowTouchMove||!e.options.allowTouchMove(t))})},m=function(e){var t=e||window.event;return !!f(t.target)||(1<t.touches.length||(t.preventDefault&&t.preventDefault(),!1))},o=function(){setTimeout(function(){void 0!==v&&(document.body.style.paddingRight=v,v=void 0),void 0!==s&&(document.body.style.overflow=s,s=void 0);});};exports.disableBodyScroll=function(i,e){if(d){if(!i)return void console.error("disableBodyScroll unsuccessful - targetElement must be provided when calling disableBodyScroll on IOS devices.");if(i&&!c.some(function(e){return e.targetElement===i})){var t={targetElement:i,options:e||{}};c=[].concat(r(c),[t]),i.ontouchstart=function(e){1===e.targetTouches.length&&(a=e.targetTouches[0].clientY);},i.ontouchmove=function(e){var t,o,n,r;1===e.targetTouches.length&&(o=i,r=(t=e).targetTouches[0].clientY-a,!f(t.target)&&(o&&0===o.scrollTop&&0<r?m(t):(n=o)&&n.scrollHeight-n.scrollTop<=n.clientHeight&&r<0?m(t):t.stopPropagation()));},u||(document.addEventListener("touchmove",m,l?{passive:!1}:void 0),u=!0);}}else{n=e,setTimeout(function(){if(void 0===v){var e=!!n&&!0===n.reserveScrollBarGap,t=window.innerWidth-document.documentElement.clientWidth;e&&0<t&&(v=document.body.style.paddingRight,document.body.style.paddingRight=t+"px");}void 0===s&&(s=document.body.style.overflow,document.body.style.overflow="hidden");});var o={targetElement:i,options:e||{}};c=[].concat(r(c),[o]);}var n;},exports.clearAllBodyScrollLocks=function(){d?(c.forEach(function(e){e.targetElement.ontouchstart=null,e.targetElement.ontouchmove=null;}),u&&(document.removeEventListener("touchmove",m,l?{passive:!1}:void 0),u=!1),c=[],a=-1):(o(),c=[]);},exports.enableBodyScroll=function(t){if(d){if(!t)return void console.error("enableBodyScroll unsuccessful - targetElement must be provided when calling enableBodyScroll on IOS devices.");t.ontouchstart=null,t.ontouchmove=null,c=c.filter(function(e){return e.targetElement!==t}),u&&0===c.length&&(document.removeEventListener("touchmove",m,l?{passive:!1}:void 0),u=!1);}else(c=c.filter(function(e){return e.targetElement!==t})).length||o();};});
   });
 
-  var lodash_defer = defer;
-
-  var Modal =
-  /*#__PURE__*/
-  function () {
-    function Modal(options) {
-      _classCallCheck(this, Modal);
-
-      this.createModalOverlay();
-      this.options = options;
-      return this;
-    }
-    /**
-     * Removes svg mask from modal overlay and removes classes for modal being visible
-     */
-
-
-    _createClass(Modal, [{
-      key: "cleanup",
-      value: function cleanup() {
-        var _this = this;
-
-        lodash_defer(function () {
-          var element = _this._modalOverlayElem;
-
-          if (element && element instanceof SVGElement) {
-            element.parentNode.removeChild(element);
-          }
-
-          _this._modalOverlayElem = null;
-          document.body.classList.remove(classNames.isVisible);
-        });
-      }
-      /**
-       * Create the modal overlay, if it does not already exist
-       */
-
-    }, {
-      key: "createModalOverlay",
-      value: function createModalOverlay$1() {
-        if (!this._modalOverlayElem) {
-          var existingModal = document.getElementById('shepherdModalOverlayContainer');
-          this._modalOverlayElem = existingModal || createModalOverlay();
-          this._modalOverlayOpening = getModalMaskOpening(this._modalOverlayElem); // don't show yet -- each step will control that
-
-          this.hide(); // Only add to the DOM if this is a new modal, not reusing another one
-
-          if (!existingModal) {
-            document.body.appendChild(this._modalOverlayElem);
-          }
-        }
-      }
-      /**
-       * Hide the modal overlay
-       */
-
-    }, {
-      key: "hide",
-      value: function hide() {
-        document.body.classList.remove(classNames.isVisible);
-
-        if (this._modalOverlayElem) {
-          this._modalOverlayElem.style.display = 'none';
-        }
-      }
-      /**
-       * If modal is enabled, setup the svg mask opening and modal overlay for the step
-       * @param step
-       */
-
-    }, {
-      key: "setupForStep",
-      value: function setupForStep(step) {
-        if (this.options.useModalOverlay) {
-          this._styleForStep(step);
-
-          this.show();
-        } else {
-          this.hide();
-        }
-      }
-      /**
-       * Show the modal overlay
-       */
-
-    }, {
-      key: "show",
-      value: function show() {
-        document.body.classList.add(classNames.isVisible);
-
-        if (this._modalOverlayElem) {
-          this._modalOverlayElem.style.display = 'block';
-        }
-      }
-      /**
-       * Style the modal for the step
-       * @param {Step} step The step to style the opening for
-       * @private
-       */
-
-    }, {
-      key: "_styleForStep",
-      value: function _styleForStep(step) {
-        var modalOverlayOpening = this._modalOverlayOpening;
-        var targetElement = getElementForStep(step);
-        var modalOverlayOpeningPadding = step.options.modalOverlayOpeningPadding;
-
-        if (targetElement) {
-          positionModalOpening(targetElement, modalOverlayOpening, modalOverlayOpeningPadding);
-          this._onScreenChange = debounce$2(positionModalOpening.bind(this, targetElement, modalOverlayOpening, modalOverlayOpeningPadding), 0);
-          addStepEventListeners.call(this);
-        } else {
-          closeModalOpening(this._modalOverlayOpening);
-        }
-      }
-    }]);
-
-    return Modal;
-  }();
-
-  // Older browsers don't support event options, feature detect it.
-
-  // Adopted and modified solution from Bohdan Didukh (2017)
-  // https://stackoverflow.com/questions/41594997/ios-10-safari-prevent-scrolling-behind-a-fixed-overlay-and-maintain-scroll-posi
-
-  let hasPassiveEvents = false;
-  if (typeof window !== 'undefined') {
-    const passiveTestOptions = {
-      get passive() {
-        hasPassiveEvents = true;
-        return undefined;
-      }
-    };
-    window.addEventListener('testPassive', null, passiveTestOptions);
-    window.removeEventListener('testPassive', null, passiveTestOptions);
-  }
-
-  const isIosDevice = typeof window !== 'undefined' && window.navigator && window.navigator.platform && /iP(ad|hone|od)/.test(window.navigator.platform);
-
-
-  let locks = [];
-  let documentListenerAdded = false;
-  let initialClientY = -1;
-  let previousBodyOverflowSetting;
-  let previousBodyPaddingRight;
-
-  // returns true if `el` should be allowed to receive touchmove events
-  const allowTouchMove = el => locks.some(lock => {
-    if (lock.options.allowTouchMove && lock.options.allowTouchMove(el)) {
-      return true;
-    }
-
-    return false;
-  });
-
-  const preventDefault = rawEvent => {
-    const e = rawEvent || window.event;
-
-    // For the case whereby consumers adds a touchmove event listener to document.
-    // Recall that we do document.addEventListener('touchmove', preventDefault, { passive: false })
-    // in disableBodyScroll - so if we provide this opportunity to allowTouchMove, then
-    // the touchmove event on document will break.
-    if (allowTouchMove(e.target)) {
-      return true;
-    }
-
-    // Do not prevent if the event has more than one touch (usually meaning this is a multi touch gesture like pinch to zoom)
-    if (e.touches.length > 1) return true;
-
-    if (e.preventDefault) e.preventDefault();
-
-    return false;
-  };
-
-  const setOverflowHidden = options => {
-    // Setting overflow on body/documentElement synchronously in Desktop Safari slows down
-    // the responsiveness for some reason. Setting within a setTimeout fixes this.
-    setTimeout(() => {
-      // If previousBodyPaddingRight is already set, don't set it again.
-      if (previousBodyPaddingRight === undefined) {
-        const reserveScrollBarGap = !!options && options.reserveScrollBarGap === true;
-        const scrollBarGap = window.innerWidth - document.documentElement.clientWidth;
-
-        if (reserveScrollBarGap && scrollBarGap > 0) {
-          previousBodyPaddingRight = document.body.style.paddingRight;
-          document.body.style.paddingRight = `${scrollBarGap}px`;
-        }
-      }
-
-      // If previousBodyOverflowSetting is already set, don't set it again.
-      if (previousBodyOverflowSetting === undefined) {
-        previousBodyOverflowSetting = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-      }
-    });
-  };
-
-  const restoreOverflowSetting = () => {
-    // Setting overflow on body/documentElement synchronously in Desktop Safari slows down
-    // the responsiveness for some reason. Setting within a setTimeout fixes this.
-    setTimeout(() => {
-      if (previousBodyPaddingRight !== undefined) {
-        document.body.style.paddingRight = previousBodyPaddingRight;
-
-        // Restore previousBodyPaddingRight to undefined so setOverflowHidden knows it
-        // can be set again.
-        previousBodyPaddingRight = undefined;
-      }
-
-      if (previousBodyOverflowSetting !== undefined) {
-        document.body.style.overflow = previousBodyOverflowSetting;
-
-        // Restore previousBodyOverflowSetting to undefined
-        // so setOverflowHidden knows it can be set again.
-        previousBodyOverflowSetting = undefined;
-      }
-    });
-  };
-
-  // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight#Problems_and_solutions
-  const isTargetElementTotallyScrolled = targetElement => targetElement ? targetElement.scrollHeight - targetElement.scrollTop <= targetElement.clientHeight : false;
-
-  const handleScroll = (event, targetElement) => {
-    const clientY = event.targetTouches[0].clientY - initialClientY;
-
-    if (allowTouchMove(event.target)) {
-      return false;
-    }
-
-    if (targetElement && targetElement.scrollTop === 0 && clientY > 0) {
-      // element is at the top of its scroll
-      return preventDefault(event);
-    }
-
-    if (isTargetElementTotallyScrolled(targetElement) && clientY < 0) {
-      // element is at the top of its scroll
-      return preventDefault(event);
-    }
-
-    event.stopPropagation();
-    return true;
-  };
-
-  const disableBodyScroll = (targetElement, options) => {
-    if (isIosDevice) {
-      // targetElement must be provided, and disableBodyScroll must not have been
-      // called on this targetElement before.
-      if (!targetElement) {
-        // eslint-disable-next-line no-console
-        console.error('disableBodyScroll unsuccessful - targetElement must be provided when calling disableBodyScroll on IOS devices.');
-        return;
-      }
-
-      if (targetElement && !locks.some(lock => lock.targetElement === targetElement)) {
-        const lock = {
-          targetElement,
-          options: options || {}
-        };
-
-        locks = [...locks, lock];
-
-        targetElement.ontouchstart = event => {
-          if (event.targetTouches.length === 1) {
-            // detect single touch
-            initialClientY = event.targetTouches[0].clientY;
-          }
-        };
-        targetElement.ontouchmove = event => {
-          if (event.targetTouches.length === 1) {
-            // detect single touch
-            handleScroll(event, targetElement);
-          }
-        };
-
-        if (!documentListenerAdded) {
-          document.addEventListener('touchmove', preventDefault, hasPassiveEvents ? { passive: false } : undefined);
-          documentListenerAdded = true;
-        }
-      }
-    } else {
-      setOverflowHidden(options);
-      const lock = {
-        targetElement,
-        options: options || {}
-      };
-
-      locks = [...locks, lock];
-    }
-  };
-
-  const clearAllBodyScrollLocks = () => {
-    if (isIosDevice) {
-      // Clear all locks ontouchstart/ontouchmove handlers, and the references
-      locks.forEach(lock => {
-        lock.targetElement.ontouchstart = null;
-        lock.targetElement.ontouchmove = null;
-      });
-
-      if (documentListenerAdded) {
-        document.removeEventListener('touchmove', preventDefault, hasPassiveEvents ? { passive: false } : undefined);
-        documentListenerAdded = false;
-      }
-
-      locks = [];
-
-      // Reset initial clientY
-      initialClientY = -1;
-    } else {
-      restoreOverflowSetting();
-      locks = [];
-    }
-  };
+  var bodyScrollLock = unwrapExports(bodyScrollLock_min);
 
   var defaults = {
     trigger: 'manual',
@@ -7217,13 +7074,12 @@
    * Cleanup the steps and set pointerEvents back to 'auto'
    * @param tour The tour object
    */
-
   function cleanupSteps(tour) {
     if (tour) {
       var steps = tour.steps;
       steps.forEach(function (step) {
         if (step.options && step.options.canClickTarget === false && step.options.attachTo) {
-          var stepElement = getElementForStep(step);
+          var stepElement = step.target;
 
           if (stepElement instanceof HTMLElement) {
             stepElement.style.pointerEvents = 'auto';
@@ -7232,27 +7088,2624 @@
       });
     }
   }
-  /**
-   * Remove resize and scroll event listeners
-   */
 
-  function cleanupStepEventListeners() {
-    if (typeof this._onScreenChange === 'function') {
-      window.removeEventListener('resize', this._onScreenChange, false);
-      window.removeEventListener('scroll', this._onScreenChange, false);
-      this._onScreenChange = null;
+  function _extends$3() {
+    _extends$3 = Object.assign || function (target) {
+      for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+
+        for (var key in source) {
+          if (Object.prototype.hasOwnProperty.call(source, key)) {
+            target[key] = source[key];
+          }
+        }
+      }
+
+      return target;
+    };
+
+    return _extends$3.apply(this, arguments);
+  }
+
+  function _assertThisInitialized$1(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
 
-    window.removeEventListener('touchmove', preventModalBodyTouch, {
-      passive: false
-    });
+    return self;
+  }
+
+  function _inheritsLoose$1(subClass, superClass) {
+    subClass.prototype = Object.create(superClass.prototype);
+    subClass.prototype.constructor = subClass;
+    subClass.__proto__ = superClass;
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function _isNativeFunction(fn) {
+    return Function.toString.call(fn).indexOf("[native code]") !== -1;
+  }
+
+  function isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _construct(Parent, args, Class) {
+    if (isNativeReflectConstruct()) {
+      _construct = Reflect.construct;
+    } else {
+      _construct = function _construct(Parent, args, Class) {
+        var a = [null];
+        a.push.apply(a, args);
+        var Constructor = Function.bind.apply(Parent, a);
+        var instance = new Constructor();
+        if (Class) _setPrototypeOf(instance, Class.prototype);
+        return instance;
+      };
+    }
+
+    return _construct.apply(null, arguments);
+  }
+
+  function _wrapNativeSuper(Class) {
+    var _cache = typeof Map === "function" ? new Map() : undefined;
+
+    _wrapNativeSuper = function _wrapNativeSuper(Class) {
+      if (Class === null || !_isNativeFunction(Class)) return Class;
+
+      if (typeof Class !== "function") {
+        throw new TypeError("Super expression must either be null or a function");
+      }
+
+      if (typeof _cache !== "undefined") {
+        if (_cache.has(Class)) return _cache.get(Class);
+
+        _cache.set(Class, Wrapper);
+      }
+
+      function Wrapper() {
+        return _construct(Class, arguments, _getPrototypeOf(this).constructor);
+      }
+
+      Wrapper.prototype = Object.create(Class.prototype, {
+        constructor: {
+          value: Wrapper,
+          enumerable: false,
+          writable: true,
+          configurable: true
+        }
+      });
+      return _setPrototypeOf(Wrapper, Class);
+    };
+
+    return _wrapNativeSuper(Class);
   }
 
   /**
+   * Create an error file out of errors.md for development and a simple web link to the full errors
+   * in production mode.
+   * @private
+   */
+
+
+  var PolishedError =
+  /*#__PURE__*/
+  function (_Error) {
+    _inheritsLoose$1(PolishedError, _Error);
+
+    function PolishedError(code) {
+      var _this;
+
+      {
+        _this = _Error.call(this, "An error occurred. See https://github.com/styled-components/polished/blob/master/src/internalHelpers/errors.md#" + code + " for more information.") || this;
+      }
+
+      return _assertThisInitialized$1(_this);
+    }
+
+    return PolishedError;
+  }(
+  /*#__PURE__*/
+  _wrapNativeSuper(Error));
+
+  function colorToInt(color) {
+    return Math.round(color * 255);
+  }
+
+  function convertToInt(red, green, blue) {
+    return colorToInt(red) + "," + colorToInt(green) + "," + colorToInt(blue);
+  }
+
+  function hslToRgb(hue, saturation, lightness, convert) {
+    if (convert === void 0) {
+      convert = convertToInt;
+    }
+
+    if (saturation === 0) {
+      // achromatic
+      return convert(lightness, lightness, lightness);
+    } // formulae from https://en.wikipedia.org/wiki/HSL_and_HSV
+
+
+    var huePrime = (hue % 360 + 360) % 360 / 60;
+    var chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    var secondComponent = chroma * (1 - Math.abs(huePrime % 2 - 1));
+    var red = 0;
+    var green = 0;
+    var blue = 0;
+
+    if (huePrime >= 0 && huePrime < 1) {
+      red = chroma;
+      green = secondComponent;
+    } else if (huePrime >= 1 && huePrime < 2) {
+      red = secondComponent;
+      green = chroma;
+    } else if (huePrime >= 2 && huePrime < 3) {
+      green = chroma;
+      blue = secondComponent;
+    } else if (huePrime >= 3 && huePrime < 4) {
+      green = secondComponent;
+      blue = chroma;
+    } else if (huePrime >= 4 && huePrime < 5) {
+      red = secondComponent;
+      blue = chroma;
+    } else if (huePrime >= 5 && huePrime < 6) {
+      red = chroma;
+      blue = secondComponent;
+    }
+
+    var lightnessModification = lightness - chroma / 2;
+    var finalRed = red + lightnessModification;
+    var finalGreen = green + lightnessModification;
+    var finalBlue = blue + lightnessModification;
+    return convert(finalRed, finalGreen, finalBlue);
+  }
+
+  var namedColorMap = {
+    aliceblue: 'f0f8ff',
+    antiquewhite: 'faebd7',
+    aqua: '00ffff',
+    aquamarine: '7fffd4',
+    azure: 'f0ffff',
+    beige: 'f5f5dc',
+    bisque: 'ffe4c4',
+    black: '000',
+    blanchedalmond: 'ffebcd',
+    blue: '0000ff',
+    blueviolet: '8a2be2',
+    brown: 'a52a2a',
+    burlywood: 'deb887',
+    cadetblue: '5f9ea0',
+    chartreuse: '7fff00',
+    chocolate: 'd2691e',
+    coral: 'ff7f50',
+    cornflowerblue: '6495ed',
+    cornsilk: 'fff8dc',
+    crimson: 'dc143c',
+    cyan: '00ffff',
+    darkblue: '00008b',
+    darkcyan: '008b8b',
+    darkgoldenrod: 'b8860b',
+    darkgray: 'a9a9a9',
+    darkgreen: '006400',
+    darkgrey: 'a9a9a9',
+    darkkhaki: 'bdb76b',
+    darkmagenta: '8b008b',
+    darkolivegreen: '556b2f',
+    darkorange: 'ff8c00',
+    darkorchid: '9932cc',
+    darkred: '8b0000',
+    darksalmon: 'e9967a',
+    darkseagreen: '8fbc8f',
+    darkslateblue: '483d8b',
+    darkslategray: '2f4f4f',
+    darkslategrey: '2f4f4f',
+    darkturquoise: '00ced1',
+    darkviolet: '9400d3',
+    deeppink: 'ff1493',
+    deepskyblue: '00bfff',
+    dimgray: '696969',
+    dimgrey: '696969',
+    dodgerblue: '1e90ff',
+    firebrick: 'b22222',
+    floralwhite: 'fffaf0',
+    forestgreen: '228b22',
+    fuchsia: 'ff00ff',
+    gainsboro: 'dcdcdc',
+    ghostwhite: 'f8f8ff',
+    gold: 'ffd700',
+    goldenrod: 'daa520',
+    gray: '808080',
+    green: '008000',
+    greenyellow: 'adff2f',
+    grey: '808080',
+    honeydew: 'f0fff0',
+    hotpink: 'ff69b4',
+    indianred: 'cd5c5c',
+    indigo: '4b0082',
+    ivory: 'fffff0',
+    khaki: 'f0e68c',
+    lavender: 'e6e6fa',
+    lavenderblush: 'fff0f5',
+    lawngreen: '7cfc00',
+    lemonchiffon: 'fffacd',
+    lightblue: 'add8e6',
+    lightcoral: 'f08080',
+    lightcyan: 'e0ffff',
+    lightgoldenrodyellow: 'fafad2',
+    lightgray: 'd3d3d3',
+    lightgreen: '90ee90',
+    lightgrey: 'd3d3d3',
+    lightpink: 'ffb6c1',
+    lightsalmon: 'ffa07a',
+    lightseagreen: '20b2aa',
+    lightskyblue: '87cefa',
+    lightslategray: '789',
+    lightslategrey: '789',
+    lightsteelblue: 'b0c4de',
+    lightyellow: 'ffffe0',
+    lime: '0f0',
+    limegreen: '32cd32',
+    linen: 'faf0e6',
+    magenta: 'f0f',
+    maroon: '800000',
+    mediumaquamarine: '66cdaa',
+    mediumblue: '0000cd',
+    mediumorchid: 'ba55d3',
+    mediumpurple: '9370db',
+    mediumseagreen: '3cb371',
+    mediumslateblue: '7b68ee',
+    mediumspringgreen: '00fa9a',
+    mediumturquoise: '48d1cc',
+    mediumvioletred: 'c71585',
+    midnightblue: '191970',
+    mintcream: 'f5fffa',
+    mistyrose: 'ffe4e1',
+    moccasin: 'ffe4b5',
+    navajowhite: 'ffdead',
+    navy: '000080',
+    oldlace: 'fdf5e6',
+    olive: '808000',
+    olivedrab: '6b8e23',
+    orange: 'ffa500',
+    orangered: 'ff4500',
+    orchid: 'da70d6',
+    palegoldenrod: 'eee8aa',
+    palegreen: '98fb98',
+    paleturquoise: 'afeeee',
+    palevioletred: 'db7093',
+    papayawhip: 'ffefd5',
+    peachpuff: 'ffdab9',
+    peru: 'cd853f',
+    pink: 'ffc0cb',
+    plum: 'dda0dd',
+    powderblue: 'b0e0e6',
+    purple: '800080',
+    rebeccapurple: '639',
+    red: 'f00',
+    rosybrown: 'bc8f8f',
+    royalblue: '4169e1',
+    saddlebrown: '8b4513',
+    salmon: 'fa8072',
+    sandybrown: 'f4a460',
+    seagreen: '2e8b57',
+    seashell: 'fff5ee',
+    sienna: 'a0522d',
+    silver: 'c0c0c0',
+    skyblue: '87ceeb',
+    slateblue: '6a5acd',
+    slategray: '708090',
+    slategrey: '708090',
+    snow: 'fffafa',
+    springgreen: '00ff7f',
+    steelblue: '4682b4',
+    tan: 'd2b48c',
+    teal: '008080',
+    thistle: 'd8bfd8',
+    tomato: 'ff6347',
+    turquoise: '40e0d0',
+    violet: 'ee82ee',
+    wheat: 'f5deb3',
+    white: 'fff',
+    whitesmoke: 'f5f5f5',
+    yellow: 'ff0',
+    yellowgreen: '9acd32'
+    /**
+     * Checks if a string is a CSS named color and returns its equivalent hex value, otherwise returns the original color.
+     * @private
+     */
+
+  };
+
+  function nameToHex(color) {
+    if (typeof color !== 'string') return color;
+    var normalizedColorName = color.toLowerCase();
+    return namedColorMap[normalizedColorName] ? "#" + namedColorMap[normalizedColorName] : color;
+  }
+
+  var hexRegex = /^#[a-fA-F0-9]{6}$/;
+  var hexRgbaRegex = /^#[a-fA-F0-9]{8}$/;
+  var reducedHexRegex = /^#[a-fA-F0-9]{3}$/;
+  var reducedRgbaHexRegex = /^#[a-fA-F0-9]{4}$/;
+  var rgbRegex = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i;
+  var rgbaRegex = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([-+]?[0-9]*[.]?[0-9]+)\s*\)$/i;
+  var hslRegex = /^hsl\(\s*(\d{0,3}[.]?[0-9]+)\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*\)$/i;
+  var hslaRegex = /^hsla\(\s*(\d{0,3}[.]?[0-9]+)\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*,\s*([-+]?[0-9]*[.]?[0-9]+)\s*\)$/i;
+  /**
+   * Returns an RgbColor or RgbaColor object. This utility function is only useful
+   * if want to extract a color component. With the color util `toColorString` you
+   * can convert a RgbColor or RgbaColor object back to a string.
+   *
+   * @example
+   * // Assigns `{ red: 255, green: 0, blue: 0 }` to color1
+   * const color1 = parseToRgb('rgb(255, 0, 0)');
+   * // Assigns `{ red: 92, green: 102, blue: 112, alpha: 0.75 }` to color2
+   * const color2 = parseToRgb('hsla(210, 10%, 40%, 0.75)');
+   */
+
+  function parseToRgb(color) {
+    if (typeof color !== 'string') {
+      throw new PolishedError(3);
+    }
+
+    var normalizedColor = nameToHex(color);
+
+    if (normalizedColor.match(hexRegex)) {
+      return {
+        red: parseInt("" + normalizedColor[1] + normalizedColor[2], 16),
+        green: parseInt("" + normalizedColor[3] + normalizedColor[4], 16),
+        blue: parseInt("" + normalizedColor[5] + normalizedColor[6], 16)
+      };
+    }
+
+    if (normalizedColor.match(hexRgbaRegex)) {
+      var alpha = parseFloat((parseInt("" + normalizedColor[7] + normalizedColor[8], 16) / 255).toFixed(2));
+      return {
+        red: parseInt("" + normalizedColor[1] + normalizedColor[2], 16),
+        green: parseInt("" + normalizedColor[3] + normalizedColor[4], 16),
+        blue: parseInt("" + normalizedColor[5] + normalizedColor[6], 16),
+        alpha: alpha
+      };
+    }
+
+    if (normalizedColor.match(reducedHexRegex)) {
+      return {
+        red: parseInt("" + normalizedColor[1] + normalizedColor[1], 16),
+        green: parseInt("" + normalizedColor[2] + normalizedColor[2], 16),
+        blue: parseInt("" + normalizedColor[3] + normalizedColor[3], 16)
+      };
+    }
+
+    if (normalizedColor.match(reducedRgbaHexRegex)) {
+      var _alpha = parseFloat((parseInt("" + normalizedColor[4] + normalizedColor[4], 16) / 255).toFixed(2));
+
+      return {
+        red: parseInt("" + normalizedColor[1] + normalizedColor[1], 16),
+        green: parseInt("" + normalizedColor[2] + normalizedColor[2], 16),
+        blue: parseInt("" + normalizedColor[3] + normalizedColor[3], 16),
+        alpha: _alpha
+      };
+    }
+
+    var rgbMatched = rgbRegex.exec(normalizedColor);
+
+    if (rgbMatched) {
+      return {
+        red: parseInt("" + rgbMatched[1], 10),
+        green: parseInt("" + rgbMatched[2], 10),
+        blue: parseInt("" + rgbMatched[3], 10)
+      };
+    }
+
+    var rgbaMatched = rgbaRegex.exec(normalizedColor);
+
+    if (rgbaMatched) {
+      return {
+        red: parseInt("" + rgbaMatched[1], 10),
+        green: parseInt("" + rgbaMatched[2], 10),
+        blue: parseInt("" + rgbaMatched[3], 10),
+        alpha: parseFloat("" + rgbaMatched[4])
+      };
+    }
+
+    var hslMatched = hslRegex.exec(normalizedColor);
+
+    if (hslMatched) {
+      var hue = parseInt("" + hslMatched[1], 10);
+      var saturation = parseInt("" + hslMatched[2], 10) / 100;
+      var lightness = parseInt("" + hslMatched[3], 10) / 100;
+      var rgbColorString = "rgb(" + hslToRgb(hue, saturation, lightness) + ")";
+      var hslRgbMatched = rgbRegex.exec(rgbColorString);
+
+      if (!hslRgbMatched) {
+        throw new PolishedError(4, normalizedColor, rgbColorString);
+      }
+
+      return {
+        red: parseInt("" + hslRgbMatched[1], 10),
+        green: parseInt("" + hslRgbMatched[2], 10),
+        blue: parseInt("" + hslRgbMatched[3], 10)
+      };
+    }
+
+    var hslaMatched = hslaRegex.exec(normalizedColor);
+
+    if (hslaMatched) {
+      var _hue = parseInt("" + hslaMatched[1], 10);
+
+      var _saturation = parseInt("" + hslaMatched[2], 10) / 100;
+
+      var _lightness = parseInt("" + hslaMatched[3], 10) / 100;
+
+      var _rgbColorString = "rgb(" + hslToRgb(_hue, _saturation, _lightness) + ")";
+
+      var _hslRgbMatched = rgbRegex.exec(_rgbColorString);
+
+      if (!_hslRgbMatched) {
+        throw new PolishedError(4, normalizedColor, _rgbColorString);
+      }
+
+      return {
+        red: parseInt("" + _hslRgbMatched[1], 10),
+        green: parseInt("" + _hslRgbMatched[2], 10),
+        blue: parseInt("" + _hslRgbMatched[3], 10),
+        alpha: parseFloat("" + hslaMatched[4])
+      };
+    }
+
+    throw new PolishedError(5);
+  }
+
+  function rgbToHsl(color) {
+    // make sure rgb are contained in a set of [0, 255]
+    var red = color.red / 255;
+    var green = color.green / 255;
+    var blue = color.blue / 255;
+    var max = Math.max(red, green, blue);
+    var min = Math.min(red, green, blue);
+    var lightness = (max + min) / 2;
+
+    if (max === min) {
+      // achromatic
+      if (color.alpha !== undefined) {
+        return {
+          hue: 0,
+          saturation: 0,
+          lightness: lightness,
+          alpha: color.alpha
+        };
+      } else {
+        return {
+          hue: 0,
+          saturation: 0,
+          lightness: lightness
+        };
+      }
+    }
+
+    var hue;
+    var delta = max - min;
+    var saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+
+    switch (max) {
+      case red:
+        hue = (green - blue) / delta + (green < blue ? 6 : 0);
+        break;
+
+      case green:
+        hue = (blue - red) / delta + 2;
+        break;
+
+      default:
+        // blue case
+        hue = (red - green) / delta + 4;
+        break;
+    }
+
+    hue *= 60;
+
+    if (color.alpha !== undefined) {
+      return {
+        hue: hue,
+        saturation: saturation,
+        lightness: lightness,
+        alpha: color.alpha
+      };
+    }
+
+    return {
+      hue: hue,
+      saturation: saturation,
+      lightness: lightness
+    };
+  }
+
+  /**
+   * Returns an HslColor or HslaColor object. This utility function is only useful
+   * if want to extract a color component. With the color util `toColorString` you
+   * can convert a HslColor or HslaColor object back to a string.
+   *
+   * @example
+   * // Assigns `{ hue: 0, saturation: 1, lightness: 0.5 }` to color1
+   * const color1 = parseToHsl('rgb(255, 0, 0)');
+   * // Assigns `{ hue: 128, saturation: 1, lightness: 0.5, alpha: 0.75 }` to color2
+   * const color2 = parseToHsl('hsla(128, 100%, 50%, 0.75)');
+   */
+  function parseToHsl(color) {
+    // Note: At a later stage we can optimize this function as right now a hsl
+    // color would be parsed converted to rgb values and converted back to hsl.
+    return rgbToHsl(parseToRgb(color));
+  }
+
+  /**
+   * Reduces hex values if possible e.g. #ff8866 to #f86
+   * @private
+   */
+  var reduceHexValue = function reduceHexValue(value) {
+    if (value.length === 7 && value[1] === value[2] && value[3] === value[4] && value[5] === value[6]) {
+      return "#" + value[1] + value[3] + value[5];
+    }
+
+    return value;
+  };
+
+  function numberToHex(value) {
+    var hex = value.toString(16);
+    return hex.length === 1 ? "0" + hex : hex;
+  }
+
+  function colorToHex(color) {
+    return numberToHex(Math.round(color * 255));
+  }
+
+  function convertToHex(red, green, blue) {
+    return reduceHexValue("#" + colorToHex(red) + colorToHex(green) + colorToHex(blue));
+  }
+
+  function hslToHex(hue, saturation, lightness) {
+    return hslToRgb(hue, saturation, lightness, convertToHex);
+  }
+
+  /**
+   * Returns a string value for the color. The returned result is the smallest possible hex notation.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: hsl(359, 0.75, 0.4),
+   *   background: hsl({ hue: 360, saturation: 0.75, lightness: 0.4 }),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${hsl(359, 0.75, 0.4)};
+   *   background: ${hsl({ hue: 360, saturation: 0.75, lightness: 0.4 })};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "#b3191c";
+   *   background: "#b3191c";
+   * }
+   */
+  function hsl(value, saturation, lightness) {
+    if (typeof value === 'number' && typeof saturation === 'number' && typeof lightness === 'number') {
+      return hslToHex(value, saturation, lightness);
+    } else if (typeof value === 'object' && saturation === undefined && lightness === undefined) {
+      return hslToHex(value.hue, value.saturation, value.lightness);
+    }
+
+    throw new PolishedError(1);
+  }
+
+  /**
+   * Returns a string value for the color. The returned result is the smallest possible rgba or hex notation.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: hsla(359, 0.75, 0.4, 0.7),
+   *   background: hsla({ hue: 360, saturation: 0.75, lightness: 0.4, alpha: 0,7 }),
+   *   background: hsla(359, 0.75, 0.4, 1),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${hsla(359, 0.75, 0.4, 0.7)};
+   *   background: ${hsla({ hue: 360, saturation: 0.75, lightness: 0.4, alpha: 0,7 })};
+   *   background: ${hsla(359, 0.75, 0.4, 1)};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "rgba(179,25,28,0.7)";
+   *   background: "rgba(179,25,28,0.7)";
+   *   background: "#b3191c";
+   * }
+   */
+  function hsla(value, saturation, lightness, alpha) {
+    if (typeof value === 'number' && typeof saturation === 'number' && typeof lightness === 'number' && typeof alpha === 'number') {
+      return alpha >= 1 ? hslToHex(value, saturation, lightness) : "rgba(" + hslToRgb(value, saturation, lightness) + "," + alpha + ")";
+    } else if (typeof value === 'object' && saturation === undefined && lightness === undefined && alpha === undefined) {
+      return value.alpha >= 1 ? hslToHex(value.hue, value.saturation, value.lightness) : "rgba(" + hslToRgb(value.hue, value.saturation, value.lightness) + "," + value.alpha + ")";
+    }
+
+    throw new PolishedError(2);
+  }
+
+  /**
+   * Returns a string value for the color. The returned result is the smallest possible hex notation.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: rgb(255, 205, 100),
+   *   background: rgb({ red: 255, green: 205, blue: 100 }),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${rgb(255, 205, 100)};
+   *   background: ${rgb({ red: 255, green: 205, blue: 100 })};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "#ffcd64";
+   *   background: "#ffcd64";
+   * }
+   */
+  function rgb(value, green, blue) {
+    if (typeof value === 'number' && typeof green === 'number' && typeof blue === 'number') {
+      return reduceHexValue("#" + numberToHex(value) + numberToHex(green) + numberToHex(blue));
+    } else if (typeof value === 'object' && green === undefined && blue === undefined) {
+      return reduceHexValue("#" + numberToHex(value.red) + numberToHex(value.green) + numberToHex(value.blue));
+    }
+
+    throw new PolishedError(6);
+  }
+
+  /**
+   * Returns a string value for the color. The returned result is the smallest possible rgba or hex notation.
+   *
+   * Can also be used to fade a color by passing a hex value or named CSS color along with an alpha value.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: rgba(255, 205, 100, 0.7),
+   *   background: rgba({ red: 255, green: 205, blue: 100, alpha: 0.7 }),
+   *   background: rgba(255, 205, 100, 1),
+   *   background: rgba('#ffffff', 0.4),
+   *   background: rgba('black', 0.7),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${rgba(255, 205, 100, 0.7)};
+   *   background: ${rgba({ red: 255, green: 205, blue: 100, alpha: 0.7 })};
+   *   background: ${rgba(255, 205, 100, 1)};
+   *   background: ${rgba('#ffffff', 0.4)};
+   *   background: ${rgba('black', 0.7)};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "rgba(255,205,100,0.7)";
+   *   background: "rgba(255,205,100,0.7)";
+   *   background: "#ffcd64";
+   *   background: "rgba(255,255,255,0.4)";
+   *   background: "rgba(0,0,0,0.7)";
+   * }
+   */
+  function rgba(firstValue, secondValue, thirdValue, fourthValue) {
+    if (typeof firstValue === 'string' && typeof secondValue === 'number') {
+      var rgbValue = parseToRgb(firstValue);
+      return "rgba(" + rgbValue.red + "," + rgbValue.green + "," + rgbValue.blue + "," + secondValue + ")";
+    } else if (typeof firstValue === 'number' && typeof secondValue === 'number' && typeof thirdValue === 'number' && typeof fourthValue === 'number') {
+      return fourthValue >= 1 ? rgb(firstValue, secondValue, thirdValue) : "rgba(" + firstValue + "," + secondValue + "," + thirdValue + "," + fourthValue + ")";
+    } else if (typeof firstValue === 'object' && secondValue === undefined && thirdValue === undefined && fourthValue === undefined) {
+      return firstValue.alpha >= 1 ? rgb(firstValue.red, firstValue.green, firstValue.blue) : "rgba(" + firstValue.red + "," + firstValue.green + "," + firstValue.blue + "," + firstValue.alpha + ")";
+    }
+
+    throw new PolishedError(7);
+  }
+
+  var isRgb = function isRgb(color) {
+    return typeof color.red === 'number' && typeof color.green === 'number' && typeof color.blue === 'number' && (typeof color.alpha !== 'number' || typeof color.alpha === 'undefined');
+  };
+
+  var isRgba = function isRgba(color) {
+    return typeof color.red === 'number' && typeof color.green === 'number' && typeof color.blue === 'number' && typeof color.alpha === 'number';
+  };
+
+  var isHsl = function isHsl(color) {
+    return typeof color.hue === 'number' && typeof color.saturation === 'number' && typeof color.lightness === 'number' && (typeof color.alpha !== 'number' || typeof color.alpha === 'undefined');
+  };
+
+  var isHsla = function isHsla(color) {
+    return typeof color.hue === 'number' && typeof color.saturation === 'number' && typeof color.lightness === 'number' && typeof color.alpha === 'number';
+  };
+  /**
+   * Converts a RgbColor, RgbaColor, HslColor or HslaColor object to a color string.
+   * This util is useful in case you only know on runtime which color object is
+   * used. Otherwise we recommend to rely on `rgb`, `rgba`, `hsl` or `hsla`.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: toColorString({ red: 255, green: 205, blue: 100 }),
+   *   background: toColorString({ red: 255, green: 205, blue: 100, alpha: 0.72 }),
+   *   background: toColorString({ hue: 240, saturation: 1, lightness: 0.5 }),
+   *   background: toColorString({ hue: 360, saturation: 0.75, lightness: 0.4, alpha: 0.72 }),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${toColorString({ red: 255, green: 205, blue: 100 })};
+   *   background: ${toColorString({ red: 255, green: 205, blue: 100, alpha: 0.72 })};
+   *   background: ${toColorString({ hue: 240, saturation: 1, lightness: 0.5 })};
+   *   background: ${toColorString({ hue: 360, saturation: 0.75, lightness: 0.4, alpha: 0.72 })};
+   * `
+   *
+   * // CSS in JS Output
+   * element {
+   *   background: "#ffcd64";
+   *   background: "rgba(255,205,100,0.72)";
+   *   background: "#00f";
+   *   background: "rgba(179,25,25,0.72)";
+   * }
+   */
+
+
+  function toColorString(color) {
+    if (typeof color !== 'object') throw new PolishedError(8);
+    if (isRgba(color)) return rgba(color);
+    if (isRgb(color)) return rgb(color);
+    if (isHsla(color)) return hsla(color);
+    if (isHsl(color)) return hsl(color);
+    throw new PolishedError(8);
+  }
+
+  // Type definitions taken from https://github.com/gcanti/flow-static-land/blob/master/src/Fun.js
+  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-redeclare
+  function curried(f, length, acc) {
+    return function fn() {
+      // eslint-disable-next-line prefer-rest-params
+      var combined = acc.concat(Array.prototype.slice.call(arguments));
+      return combined.length >= length ? f.apply(this, combined) : curried(f, length, combined);
+    };
+  } // eslint-disable-next-line no-redeclare
+
+
+  function curry(f) {
+    // eslint-disable-line no-redeclare
+    return curried(f, f.length, []);
+  }
+
+  function guard(lowerBoundary, upperBoundary, value) {
+    return Math.max(lowerBoundary, Math.min(upperBoundary, value));
+  }
+
+  /**
+   * Returns a string value for the darkened color.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: darken(0.2, '#FFCD64'),
+   *   background: darken('0.2', 'rgba(255,205,100,0.7)'),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${darken(0.2, '#FFCD64')};
+   *   background: ${darken('0.2', 'rgba(255,205,100,0.7)')};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "#ffbd31";
+   *   background: "rgba(255,189,49,0.7)";
+   * }
+   */
+
+  function darken(amount, color) {
+    if (color === 'transparent') return color;
+    var hslColor = parseToHsl(color);
+    return toColorString(_extends$3({}, hslColor, {
+      lightness: guard(0, 1, hslColor.lightness - parseFloat(amount))
+    }));
+  } // prettier-ignore
+
+
+  var curriedDarken =
+  /*#__PURE__*/
+  curry
+  /* ::<number | string, string, string> */
+  (darken);
+
+  /**
+   * Decreases the intensity of a color. Its range is between 0 to 1. The first
+   * argument of the desaturate function is the amount by how much the color
+   * intensity should be decreased.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: desaturate(0.2, '#CCCD64'),
+   *   background: desaturate('0.2', 'rgba(204,205,100,0.7)'),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${desaturate(0.2, '#CCCD64')};
+   *   background: ${desaturate('0.2', 'rgba(204,205,100,0.7)')};
+   * `
+   *
+   * // CSS in JS Output
+   * element {
+   *   background: "#b8b979";
+   *   background: "rgba(184,185,121,0.7)";
+   * }
+   */
+
+  function desaturate(amount, color) {
+    if (color === 'transparent') return color;
+    var hslColor = parseToHsl(color);
+    return toColorString(_extends$3({}, hslColor, {
+      saturation: guard(0, 1, hslColor.saturation - parseFloat(amount))
+    }));
+  } // prettier-ignore
+
+
+  var curriedDesaturate =
+  /*#__PURE__*/
+  curry
+  /* ::<number | string, string, string> */
+  (desaturate);
+
+  /**
+   * Returns a number (float) representing the luminance of a color.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: getLuminance('#CCCD64') >= getLuminance('#0000ff') ? '#CCCD64' : '#0000ff',
+   *   background: getLuminance('rgba(58, 133, 255, 1)') >= getLuminance('rgba(255, 57, 149, 1)') ?
+   *                             'rgba(58, 133, 255, 1)' :
+   *                             'rgba(255, 57, 149, 1)',
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${getLuminance('#CCCD64') >= getLuminance('#0000ff') ? '#CCCD64' : '#0000ff'};
+   *   background: ${getLuminance('rgba(58, 133, 255, 1)') >= getLuminance('rgba(255, 57, 149, 1)') ?
+   *                             'rgba(58, 133, 255, 1)' :
+   *                             'rgba(255, 57, 149, 1)'};
+   *
+   * // CSS in JS Output
+   *
+   * div {
+   *   background: "#CCCD64";
+   *   background: "rgba(58, 133, 255, 1)";
+   * }
+   */
+
+  function getLuminance(color) {
+    if (color === 'transparent') return 0;
+    var rgbColor = parseToRgb(color);
+
+    var _Object$keys$map = Object.keys(rgbColor).map(function (key) {
+      var channel = rgbColor[key] / 255;
+      return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+    }),
+        r = _Object$keys$map[0],
+        g = _Object$keys$map[1],
+        b = _Object$keys$map[2];
+
+    return parseFloat((0.2126 * r + 0.7152 * g + 0.0722 * b).toFixed(3));
+  }
+
+  /**
+   * Returns a string value for the lightened color.
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: lighten(0.2, '#CCCD64'),
+   *   background: lighten('0.2', 'rgba(204,205,100,0.7)'),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${lighten(0.2, '#FFCD64')};
+   *   background: ${lighten('0.2', 'rgba(204,205,100,0.7)')};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "#e5e6b1";
+   *   background: "rgba(229,230,177,0.7)";
+   * }
+   */
+
+  function lighten(amount, color) {
+    if (color === 'transparent') return color;
+    var hslColor = parseToHsl(color);
+    return toColorString(_extends$3({}, hslColor, {
+      lightness: guard(0, 1, hslColor.lightness + parseFloat(amount))
+    }));
+  } // prettier-ignore
+
+
+  var curriedLighten =
+  /*#__PURE__*/
+  curry
+  /* ::<number | string, string, string> */
+  (lighten);
+
+  /**
+   * Returns black or white (or optional light and dark return colors) for best contrast depending on the luminosity of the given color.
+   * Follows [W3C specs for readability](https://www.w3.org/TR/WCAG20-TECHS/G18.html).
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   color: readableColor('#000'),
+   *   color: readableColor('black', '#001', '#ff8'),
+   *   color: readableColor('white', '#001', '#ff8'),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   color: ${readableColor('#000')};
+   *   color: ${readableColor('black', '#001', '#ff8')};
+   *   color: ${readableColor('white', '#001', '#ff8')};
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   color: "#fff";
+   *   color: "#ff8";
+   *   color: "#001";
+   * }
+   */
+
+  function readableColor(color, lightReturnColor, darkReturnColor) {
+    if (lightReturnColor === void 0) {
+      lightReturnColor = '#000';
+    }
+
+    if (darkReturnColor === void 0) {
+      darkReturnColor = '#fff';
+    }
+
+    return getLuminance(color) > 0.179 ? lightReturnColor : darkReturnColor;
+  }
+
+  /**
+   * Decreases the opacity of a color. Its range for the amount is between 0 to 1.
+   *
+   *
+   * @example
+   * // Styles as object usage
+   * const styles = {
+   *   background: transparentize(0.1, '#fff');
+   *   background: transparentize(0.2, 'hsl(0, 0%, 100%)'),
+   *   background: transparentize('0.5', 'rgba(255, 0, 0, 0.8)'),
+   * }
+   *
+   * // styled-components usage
+   * const div = styled.div`
+   *   background: ${transparentize(0.1, '#fff')};
+   *   background: ${transparentize(0.2, 'hsl(0, 0%, 100%)')},
+   *   background: ${transparentize('0.5', 'rgba(255, 0, 0, 0.8)')},
+   * `
+   *
+   * // CSS in JS Output
+   *
+   * element {
+   *   background: "rgba(255,255,255,0.9)";
+   *   background: "rgba(255,255,255,0.8)";
+   *   background: "rgba(255,0,0,0.3)";
+   * }
+   */
+
+  function transparentize(amount, color) {
+    if (color === 'transparent') return color;
+    var parsedColor = parseToRgb(color);
+    var alpha = typeof parsedColor.alpha === 'number' ? parsedColor.alpha : 1;
+
+    var colorWithAlpha = _extends$3({}, parsedColor, {
+      alpha: guard(0, 1, (alpha * 100 - parseFloat(amount) * 100) / 100)
+    });
+
+    return rgba(colorWithAlpha);
+  } // prettier-ignore
+
+
+  var curriedTransparentize =
+  /*#__PURE__*/
+  curry
+  /* ::<number | string, string, string> */
+  (transparentize);
+
+  var styles = {
+    arrowSize: 2.1,
+    shepherdButtonBorderRadius: '3px',
+    shepherdElementBorderRadius: '5px',
+    shepherdElementMaxHeight: '100%',
+    shepherdElementMaxWidth: '100%',
+    shepherdElementZIndex: 9999,
+    shepherdTextBackground: '#ffffff',
+    shepherdTextLineHeight: '1.3em',
+    shepherdTextFontSize: '1rem',
+    shepherdThemePrimary: '#3288e6'
+  };
+  function getVariables(options) {
+    if (options.styleVariables) {
+      _extends(styles, options.styleVariables);
+    }
+
+    if (!styles.shepherdHeaderBackground) {
+      styles.shepherdHeaderBackground = curriedDarken(0.1, styles.shepherdTextBackground);
+    }
+
+    if (!styles.shepherdThemeSecondary) {
+      styles.shepherdThemeSecondary = curriedDesaturate(0.7, curriedLighten(0.4, styles.shepherdThemePrimary));
+    }
+
+    _setTextColors();
+
+    return styles;
+  }
+  /**
+   * Set all the text colors to contrasting ones, for readability, if not already defined.
+   * @private
+   */
+
+  function _setTextColors() {
+    if (!styles.shepherdThemeTextPrimary) {
+      styles.shepherdThemeTextPrimary = curriedTransparentize(0.25, readableColor(styles.shepherdThemePrimary));
+    }
+
+    if (!styles.shepherdThemeTextSecondary) {
+      styles.shepherdThemeTextSecondary = curriedTransparentize(0.25, readableColor(styles.shepherdThemeSecondary));
+    }
+
+    if (!styles.shepherdThemeTextHeader) {
+      styles.shepherdThemeTextHeader = curriedTransparentize(0.25, readableColor(styles.shepherdHeaderBackground));
+    }
+
+    if (!styles.shepherdThemeTextColor) {
+      styles.shepherdThemeTextColor = curriedTransparentize(0.25, readableColor(styles.shepherdTextBackground));
+    }
+  }
+
+  /**
+   * Code refactored from Mozilla Developer Network:
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+   */
+
+  function assign$1(target, firstSource) {
+    if (target === undefined || target === null) {
+      throw new TypeError('Cannot convert first argument to object');
+    }
+
+    var to = Object(target);
+    for (var i = 1; i < arguments.length; i++) {
+      var nextSource = arguments[i];
+      if (nextSource === undefined || nextSource === null) {
+        continue;
+      }
+
+      var keysArray = Object.keys(Object(nextSource));
+      for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+        var nextKey = keysArray[nextIndex];
+        var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+        if (desc !== undefined && desc.enumerable) {
+          to[nextKey] = nextSource[nextKey];
+        }
+      }
+    }
+    return to;
+  }
+
+  function polyfill$1() {
+    if (!Object.assign) {
+      Object.defineProperty(Object, 'assign', {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: assign$1
+      });
+    }
+  }
+
+  var es6ObjectAssign = {
+    assign: assign$1,
+    polyfill: polyfill$1
+  };
+  var es6ObjectAssign_1 = es6ObjectAssign.assign;
+
+  var KEBAB_REGEX = /[A-Z]/g;
+
+  var _hash = function hash(str) {
+    var hash = 5381,
+        i = str.length;
+
+    while (i) {
+      hash = hash * 33 ^ str.charCodeAt(--i);
+    }
+
+    return '_' + (hash >>> 0).toString(36);
+  };
+
+  var create$2 = function create(config) {
+    config = config || {};
+    var assign = config.assign || Object.assign;
+    var client = typeof window === 'object'; // Check if we are really in browser environment.
+
+    var renderer = assign({
+      raw: '',
+      pfx: '_',
+      client: client,
+      assign: assign,
+      stringify: JSON.stringify,
+      kebab: function kebab(prop) {
+        return prop.replace(KEBAB_REGEX, '-$&').toLowerCase();
+      },
+      decl: function decl(key, value) {
+        key = renderer.kebab(key);
+        return key + ':' + value + ';';
+      },
+      hash: function hash(obj) {
+        return _hash(renderer.stringify(obj));
+      },
+      selector: function selector(parent, _selector) {
+        return parent + (_selector[0] === ':' ? '' : ' ') + _selector;
+      },
+      putRaw: function putRaw(rawCssRule) {
+        renderer.raw += rawCssRule;
+      }
+    }, config);
+
+    if (renderer.client) {
+      if (!renderer.sh) document.head.appendChild(renderer.sh = document.createElement('style'));
+
+      renderer.putRaw = function (rawCssRule) {
+        // .insertRule() is faster than .appendChild(), that's why we use it in PROD.
+        // But CSS injected using .insertRule() is not displayed in Chrome Devtools,
+        // that's why we use .appendChild in DEV.
+        {
+          var sheet = renderer.sh.sheet; // Unknown pseudo-selectors will throw, this try/catch swallows all errors.
+
+          try {
+            sheet.insertRule(rawCssRule, sheet.cssRules.length); // eslint-disable-next-line no-empty
+          } catch (error) {}
+        }
+      };
+    }
+
+    renderer.put = function (selector, decls, atrule) {
+      var str = '';
+      var prop, value;
+      var postponed = [];
+
+      for (prop in decls) {
+        value = decls[prop];
+
+        if (value instanceof Object && !(value instanceof Array)) {
+          postponed.push(prop);
+        } else {
+          {
+            str += renderer.decl(prop, value, selector, atrule);
+          }
+        }
+      }
+
+      if (str) {
+        {
+          str = selector + '{' + str + '}';
+        }
+
+        renderer.putRaw(atrule ? atrule + '{' + str + '}' : str);
+      }
+
+      for (var i = 0; i < postponed.length; i++) {
+        prop = postponed[i];
+
+        if (prop[0] === "@" && prop !== "@font-face") {
+          renderer.putAt(selector, decls[prop], prop);
+        } else {
+          renderer.put(renderer.selector(selector, prop), decls[prop], atrule);
+        }
+      }
+    };
+
+    renderer.putAt = renderer.put;
+    return renderer;
+  };
+
+  var addon = function addon(renderer) {
+    var cache = {};
+
+    renderer.cache = function (css) {
+      if (!css) return '';
+      var key = renderer.hash(css);
+
+      if (!cache[key]) {
+        cache[key] = renderer.rule(css, key);
+      }
+
+      return cache[key];
+    };
+  };
+
+  var addon$1 = function addon(renderer) {
+    renderer.selector = function (parentSelectors, selector) {
+      var parents = parentSelectors.split(',');
+      var result = [];
+      var selectors = selector.split(',');
+      var len1 = parents.length;
+      var len2 = selectors.length;
+      var i, j, sel, pos, parent, replacedSelector;
+
+      for (i = 0; i < len2; i++) {
+        sel = selectors[i];
+        pos = sel.indexOf('&');
+
+        if (pos > -1) {
+          for (j = 0; j < len1; j++) {
+            parent = parents[j];
+            replacedSelector = sel.replace(/&/g, parent);
+            result.push(replacedSelector);
+          }
+        } else {
+          for (j = 0; j < len1; j++) {
+            parent = parents[j];
+
+            if (parent) {
+              result.push(parent + ' ' + sel);
+            } else {
+              result.push(sel);
+            }
+          }
+        }
+      }
+
+      return result.join(',');
+    };
+  };
+
+  var capitalizeString_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = capitalizeString;
+  function capitalizeString(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  module.exports = exports["default"];
+  });
+
+  unwrapExports(capitalizeString_1);
+
+  var prefixProperty_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = prefixProperty;
+
+
+
+  var _capitalizeString2 = _interopRequireDefault(capitalizeString_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  function prefixProperty(prefixProperties, property, style) {
+    if (prefixProperties.hasOwnProperty(property)) {
+      var newStyle = {};
+      var requiredPrefixes = prefixProperties[property];
+      var capitalizedProperty = (0, _capitalizeString2.default)(property);
+      var keys = Object.keys(style);
+      for (var i = 0; i < keys.length; i++) {
+        var styleProperty = keys[i];
+        if (styleProperty === property) {
+          for (var j = 0; j < requiredPrefixes.length; j++) {
+            newStyle[requiredPrefixes[j] + capitalizedProperty] = style[property];
+          }
+        }
+        newStyle[styleProperty] = style[styleProperty];
+      }
+      return newStyle;
+    }
+    return style;
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(prefixProperty_1);
+
+  var prefixValue_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = prefixValue;
+  function prefixValue(plugins, property, value, style, metaData) {
+    for (var i = 0, len = plugins.length; i < len; ++i) {
+      var processedValue = plugins[i](property, value, style, metaData);
+
+      // we can stop processing if a value is returned
+      // as all plugin criteria are unique
+      if (processedValue) {
+        return processedValue;
+      }
+    }
+  }
+  module.exports = exports["default"];
+  });
+
+  unwrapExports(prefixValue_1);
+
+  var addNewValuesOnly_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = addNewValuesOnly;
+  function addIfNew(list, value) {
+    if (list.indexOf(value) === -1) {
+      list.push(value);
+    }
+  }
+
+  function addNewValuesOnly(list, values) {
+    if (Array.isArray(values)) {
+      for (var i = 0, len = values.length; i < len; ++i) {
+        addIfNew(list, values[i]);
+      }
+    } else {
+      addIfNew(list, values);
+    }
+  }
+  module.exports = exports["default"];
+  });
+
+  unwrapExports(addNewValuesOnly_1);
+
+  var isObject_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = isObject;
+  function isObject(value) {
+    return value instanceof Object && !Array.isArray(value);
+  }
+  module.exports = exports["default"];
+  });
+
+  unwrapExports(isObject_1);
+
+  var createPrefixer_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = createPrefixer;
+
+
+
+  var _prefixProperty2 = _interopRequireDefault(prefixProperty_1);
+
+
+
+  var _prefixValue2 = _interopRequireDefault(prefixValue_1);
+
+
+
+  var _addNewValuesOnly2 = _interopRequireDefault(addNewValuesOnly_1);
+
+
+
+  var _isObject2 = _interopRequireDefault(isObject_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  function createPrefixer(_ref) {
+    var prefixMap = _ref.prefixMap,
+        plugins = _ref.plugins;
+
+    function prefixAll(style) {
+      for (var property in style) {
+        var value = style[property];
+
+        // handle nested objects
+        if ((0, _isObject2.default)(value)) {
+          style[property] = prefixAll(value);
+          // handle array values
+        } else if (Array.isArray(value)) {
+          var combinedValue = [];
+
+          for (var i = 0, len = value.length; i < len; ++i) {
+            var processedValue = (0, _prefixValue2.default)(plugins, property, value[i], style, prefixMap);
+            (0, _addNewValuesOnly2.default)(combinedValue, processedValue || value[i]);
+          }
+
+          // only modify the value if it was touched
+          // by any plugin to prevent unnecessary mutations
+          if (combinedValue.length > 0) {
+            style[property] = combinedValue;
+          }
+        } else {
+          var _processedValue = (0, _prefixValue2.default)(plugins, property, value, style, prefixMap);
+
+          // only modify the value if it was touched
+          // by any plugin to prevent unnecessary mutations
+          if (_processedValue) {
+            style[property] = _processedValue;
+          }
+
+          style = (0, _prefixProperty2.default)(prefixMap, property, style);
+        }
+      }
+
+      return style;
+    }
+
+    return prefixAll;
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(createPrefixer_1);
+
+  var staticData = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  var w = ["Webkit"];
+  var m = ["Moz"];
+  var ms = ["ms"];
+  var wm = ["Webkit", "Moz"];
+  var wms = ["Webkit", "ms"];
+  var wmms = ["Webkit", "Moz", "ms"];
+
+  exports.default = {
+    plugins: [],
+    prefixMap: { "appearance": wm, "textEmphasisPosition": w, "textEmphasis": w, "textEmphasisStyle": w, "textEmphasisColor": w, "boxDecorationBreak": w, "maskImage": w, "maskMode": w, "maskRepeat": w, "maskPosition": w, "maskClip": w, "maskOrigin": w, "maskSize": w, "maskComposite": w, "mask": w, "maskBorderSource": w, "maskBorderMode": w, "maskBorderSlice": w, "maskBorderWidth": w, "maskBorderOutset": w, "maskBorderRepeat": w, "maskBorder": w, "maskType": w, "textDecorationStyle": w, "textDecorationSkip": w, "textDecorationLine": w, "textDecorationColor": w, "userSelect": wmms, "backdropFilter": w, "fontKerning": w, "scrollSnapType": wms, "scrollSnapPointsX": wms, "scrollSnapPointsY": wms, "scrollSnapDestination": wms, "scrollSnapCoordinate": wms, "clipPath": w, "shapeImageThreshold": w, "shapeImageMargin": w, "shapeImageOutside": w, "filter": w, "hyphens": wms, "flowInto": wms, "flowFrom": wms, "breakBefore": wms, "breakAfter": wms, "breakInside": wms, "regionFragment": wms, "writingMode": wms, "textOrientation": w, "tabSize": m, "fontFeatureSettings": w, "columnCount": w, "columnFill": w, "columnGap": w, "columnRule": w, "columnRuleColor": w, "columnRuleStyle": w, "columnRuleWidth": w, "columns": w, "columnSpan": w, "columnWidth": w, "wrapFlow": ms, "wrapThrough": ms, "wrapMargin": ms, "gridTemplateColumns": ms, "gridTemplateRows": ms, "gridTemplateAreas": ms, "gridTemplate": ms, "gridAutoColumns": ms, "gridAutoRows": ms, "gridAutoFlow": ms, "grid": ms, "gridRowStart": ms, "gridColumnStart": ms, "gridRowEnd": ms, "gridRow": ms, "gridColumn": ms, "gridColumnEnd": ms, "gridColumnGap": ms, "gridRowGap": ms, "gridArea": ms, "gridGap": ms, "textSizeAdjust": wms }
+  };
+  module.exports = exports["default"];
+  });
+
+  unwrapExports(staticData);
+
+  var cursor_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = cursor;
+  var prefixes = ['-webkit-', '-moz-', ''];
+
+  var values = {
+    'zoom-in': true,
+    'zoom-out': true,
+    grab: true,
+    grabbing: true
+  };
+
+  function cursor(property, value) {
+    if (property === 'cursor' && values.hasOwnProperty(value)) {
+      return prefixes.map(function (prefix) {
+        return prefix + value;
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(cursor_1);
+
+  var isPrefixedValue_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = isPrefixedValue;
+  var regex = /-webkit-|-moz-|-ms-/;
+
+  function isPrefixedValue(value) {
+    return typeof value === 'string' && regex.test(value);
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(isPrefixedValue_1);
+
+  var crossFade_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = crossFade;
+
+
+
+  var _isPrefixedValue2 = _interopRequireDefault(isPrefixedValue_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  // http://caniuse.com/#search=cross-fade
+  var prefixes = ['-webkit-', ''];
+  function crossFade(property, value) {
+    if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && value.indexOf('cross-fade(') > -1) {
+      return prefixes.map(function (prefix) {
+        return value.replace(/cross-fade\(/g, prefix + 'cross-fade(');
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(crossFade_1);
+
+  var filter_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = filter;
+
+
+
+  var _isPrefixedValue2 = _interopRequireDefault(isPrefixedValue_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  // http://caniuse.com/#feat=css-filter-function
+  var prefixes = ['-webkit-', ''];
+  function filter(property, value) {
+    if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && value.indexOf('filter(') > -1) {
+      return prefixes.map(function (prefix) {
+        return value.replace(/filter\(/g, prefix + 'filter(');
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(filter_1);
+
+  var flex_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = flex;
+  var values = {
+    flex: ['-webkit-box', '-moz-box', '-ms-flexbox', '-webkit-flex', 'flex'],
+    'inline-flex': ['-webkit-inline-box', '-moz-inline-box', '-ms-inline-flexbox', '-webkit-inline-flex', 'inline-flex']
+  };
+
+  function flex(property, value) {
+    if (property === 'display' && values.hasOwnProperty(value)) {
+      return values[value];
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(flex_1);
+
+  var flexboxOld_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = flexboxOld;
+  var alternativeValues = {
+    'space-around': 'justify',
+    'space-between': 'justify',
+    'flex-start': 'start',
+    'flex-end': 'end',
+    'wrap-reverse': 'multiple',
+    wrap: 'multiple',
+    flex: 'box',
+    'inline-flex': 'inline-box'
+  };
+
+  var alternativeProps = {
+    alignItems: 'WebkitBoxAlign',
+    justifyContent: 'WebkitBoxPack',
+    flexWrap: 'WebkitBoxLines',
+    flexGrow: 'WebkitBoxFlex'
+  };
+
+  function flexboxOld(property, value, style) {
+    if (property === 'flexDirection' && typeof value === 'string') {
+      if (value.indexOf('column') > -1) {
+        style.WebkitBoxOrient = 'vertical';
+      } else {
+        style.WebkitBoxOrient = 'horizontal';
+      }
+      if (value.indexOf('reverse') > -1) {
+        style.WebkitBoxDirection = 'reverse';
+      } else {
+        style.WebkitBoxDirection = 'normal';
+      }
+    }
+    if (alternativeProps.hasOwnProperty(property)) {
+      style[alternativeProps[property]] = alternativeValues[value] || value;
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(flexboxOld_1);
+
+  var gradient_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = gradient;
+
+
+
+  var _isPrefixedValue2 = _interopRequireDefault(isPrefixedValue_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  var prefixes = ['-webkit-', '-moz-', ''];
+
+  var values = /linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient/gi;
+
+  function gradient(property, value) {
+    if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && values.test(value)) {
+      return prefixes.map(function (prefix) {
+        return value.replace(values, function (grad) {
+          return prefix + grad;
+        });
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(gradient_1);
+
+  var imageSet_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = imageSet;
+
+
+
+  var _isPrefixedValue2 = _interopRequireDefault(isPrefixedValue_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  // http://caniuse.com/#feat=css-image-set
+  var prefixes = ['-webkit-', ''];
+  function imageSet(property, value) {
+    if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && value.indexOf('image-set(') > -1) {
+      return prefixes.map(function (prefix) {
+        return value.replace(/image-set\(/g, prefix + 'image-set(');
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(imageSet_1);
+
+  var position_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = position;
+  function position(property, value) {
+    if (property === 'position' && value === 'sticky') {
+      return ['-webkit-sticky', 'sticky'];
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(position_1);
+
+  var sizing_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = sizing;
+  var prefixes = ['-webkit-', '-moz-', ''];
+
+  var properties = {
+    maxHeight: true,
+    maxWidth: true,
+    width: true,
+    height: true,
+    columnWidth: true,
+    minWidth: true,
+    minHeight: true
+  };
+  var values = {
+    'min-content': true,
+    'max-content': true,
+    'fill-available': true,
+    'fit-content': true,
+    'contain-floats': true
+  };
+
+  function sizing(property, value) {
+    if (properties.hasOwnProperty(property) && values.hasOwnProperty(value)) {
+      return prefixes.map(function (prefix) {
+        return prefix + value;
+      });
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(sizing_1);
+
+  /* eslint-disable no-var, prefer-template */
+  var uppercasePattern = /[A-Z]/g;
+  var msPattern = /^ms-/;
+  var cache = {};
+
+  function toHyphenLower(match) {
+    return '-' + match.toLowerCase()
+  }
+
+  function hyphenateStyleName(name) {
+    if (cache.hasOwnProperty(name)) {
+      return cache[name]
+    }
+
+    var hName = name.replace(uppercasePattern, toHyphenLower);
+    return (cache[name] = msPattern.test(hName) ? '-' + hName : hName)
+  }
+
+  var hyphenateProperty_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = hyphenateProperty;
+
+
+
+  var _hyphenateStyleName2 = _interopRequireDefault(hyphenateStyleName);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  function hyphenateProperty(property) {
+    return (0, _hyphenateStyleName2.default)(property);
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(hyphenateProperty_1);
+
+  var transition_1 = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.default = transition;
+
+
+
+  var _hyphenateProperty2 = _interopRequireDefault(hyphenateProperty_1);
+
+
+
+  var _isPrefixedValue2 = _interopRequireDefault(isPrefixedValue_1);
+
+
+
+  var _capitalizeString2 = _interopRequireDefault(capitalizeString_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  var properties = {
+    transition: true,
+    transitionProperty: true,
+    WebkitTransition: true,
+    WebkitTransitionProperty: true,
+    MozTransition: true,
+    MozTransitionProperty: true
+  };
+
+
+  var prefixMapping = {
+    Webkit: '-webkit-',
+    Moz: '-moz-',
+    ms: '-ms-'
+  };
+
+  function prefixValue(value, propertyPrefixMap) {
+    if ((0, _isPrefixedValue2.default)(value)) {
+      return value;
+    }
+
+    // only split multi values, not cubic beziers
+    var multipleValues = value.split(/,(?![^()]*(?:\([^()]*\))?\))/g);
+
+    for (var i = 0, len = multipleValues.length; i < len; ++i) {
+      var singleValue = multipleValues[i];
+      var values = [singleValue];
+      for (var property in propertyPrefixMap) {
+        var dashCaseProperty = (0, _hyphenateProperty2.default)(property);
+
+        if (singleValue.indexOf(dashCaseProperty) > -1 && dashCaseProperty !== 'order') {
+          var prefixes = propertyPrefixMap[property];
+          for (var j = 0, pLen = prefixes.length; j < pLen; ++j) {
+            // join all prefixes and create a new value
+            values.unshift(singleValue.replace(dashCaseProperty, prefixMapping[prefixes[j]] + dashCaseProperty));
+          }
+        }
+      }
+
+      multipleValues[i] = values.join(',');
+    }
+
+    return multipleValues.join(',');
+  }
+
+  function transition(property, value, style, propertyPrefixMap) {
+    // also check for already prefixed transitions
+    if (typeof value === 'string' && properties.hasOwnProperty(property)) {
+      var outputValue = prefixValue(value, propertyPrefixMap);
+      // if the property is already prefixed
+      var webkitOutput = outputValue.split(/,(?![^()]*(?:\([^()]*\))?\))/g).filter(function (val) {
+        return !/-moz-|-ms-/.test(val);
+      }).join(',');
+
+      if (property.indexOf('Webkit') > -1) {
+        return webkitOutput;
+      }
+
+      var mozOutput = outputValue.split(/,(?![^()]*(?:\([^()]*\))?\))/g).filter(function (val) {
+        return !/-webkit-|-ms-/.test(val);
+      }).join(',');
+
+      if (property.indexOf('Moz') > -1) {
+        return mozOutput;
+      }
+
+      style['Webkit' + (0, _capitalizeString2.default)(property)] = webkitOutput;
+      style['Moz' + (0, _capitalizeString2.default)(property)] = mozOutput;
+      return outputValue;
+    }
+  }
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(transition_1);
+
+  var _static = createCommonjsModule(function (module, exports) {
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+
+
+  var _createPrefixer2 = _interopRequireDefault(createPrefixer_1);
+
+
+
+  var _staticData2 = _interopRequireDefault(staticData);
+
+
+
+  var _cursor2 = _interopRequireDefault(cursor_1);
+
+
+
+  var _crossFade2 = _interopRequireDefault(crossFade_1);
+
+
+
+  var _filter2 = _interopRequireDefault(filter_1);
+
+
+
+  var _flex2 = _interopRequireDefault(flex_1);
+
+
+
+  var _flexboxOld2 = _interopRequireDefault(flexboxOld_1);
+
+
+
+  var _gradient2 = _interopRequireDefault(gradient_1);
+
+
+
+  var _imageSet2 = _interopRequireDefault(imageSet_1);
+
+
+
+  var _position2 = _interopRequireDefault(position_1);
+
+
+
+  var _sizing2 = _interopRequireDefault(sizing_1);
+
+
+
+  var _transition2 = _interopRequireDefault(transition_1);
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+  var plugins = [_crossFade2.default, _cursor2.default, _filter2.default, _flexboxOld2.default, _gradient2.default, _imageSet2.default, _position2.default, _sizing2.default, _transition2.default, _flex2.default];
+
+  exports.default = (0, _createPrefixer2.default)({
+    prefixMap: _staticData2.default.prefixMap,
+    plugins: plugins
+  });
+  module.exports = exports['default'];
+  });
+
+  unwrapExports(_static);
+
+  var CAMEL_REGEX = /-[a-z\u00E0-\u00F6\u00F8-\u00FE]/g;
+
+  var matchCallback = function matchCallback(match) {
+    return match.slice(1).toUpperCase();
+  };
+
+  var addon$2 = function addon(renderer) {
+    var decl = renderer.decl;
+    var origPut = renderer.put;
+
+    renderer.camel = function (prop) {
+      return prop.replace(CAMEL_REGEX, matchCallback);
+    };
+
+    renderer.prefix = function (prop, value) {
+      var obj = {};
+      obj[renderer.camel(prop)] = value;
+      obj = _static(obj);
+      var result = {};
+
+      for (var propPrefixed in obj) {
+        value = obj[propPrefixed];
+
+        if (propPrefixed.slice(0, 2) === 'ms') {
+          propPrefixed = 'M' + propPrefixed.slice(1);
+        }
+
+        propPrefixed = renderer.kebab(propPrefixed);
+
+        if (value instanceof Array) {
+          result[propPrefixed] = value.join(';' + propPrefixed + ':');
+        } else {
+          result[propPrefixed] = value;
+        }
+      }
+
+      return result;
+    };
+
+    renderer.decl = function (prop, value) {
+      var result = renderer.prefix(prop, value);
+      var returned = '';
+      Object.keys(result).forEach(function (key) {
+        var str = decl(key, value);
+        returned += str;
+      });
+      return returned;
+    };
+
+    function newPut(selector, decls, atrule) {
+      var indexed = selector.indexOf('::placeholder');
+
+      if (indexed > -1) {
+        var split = selector.split(',');
+
+        if (split.length > 1) {
+          split.forEach(function (sp) {
+            newPut(sp.trim(), decls, atrule);
+          });
+          return;
+        }
+
+        var bareSelect = selector.substring(0, indexed);
+        ['::-webkit-input-placeholder', '::-moz-placeholder', ':-ms-input-placeholder', ':-moz-placeholder'].forEach(function (ph) {
+          origPut(bareSelect + ph, decls, atrule);
+        });
+      }
+
+      origPut(selector, decls, atrule);
+    }
+
+    renderer.put = newPut;
+  };
+
+  var addon$3 = function addon(renderer) {
+
+    renderer.rule = function (css, block) {
+
+      block = block || renderer.hash(css);
+      block = renderer.pfx + block;
+      renderer.put('.' + block, css);
+      return ' ' + block;
+    };
+  };
+
+  var addon$4 = function addon(renderer) {
+
+    renderer.sheet = function (map, block) {
+      var result = {};
+
+      if (!block) {
+        block = renderer.hash(map);
+      }
+
+      var onElementModifier = function onElementModifier(elementModifier) {
+        var styles = map[elementModifier];
+
+        {
+          Object.defineProperty(result, elementModifier, {
+            configurable: true,
+            enumerable: true,
+            get: function get() {
+              var classNames = renderer.rule(styles, block + '-' + elementModifier);
+              Object.defineProperty(result, elementModifier, {
+                value: classNames,
+                enumerable: true
+              });
+              return classNames;
+            }
+          });
+        }
+      };
+
+      for (var elementModifier in map) {
+        onElementModifier(elementModifier);
+      }
+
+      return result;
+    };
+  };
+
+  var nano = create$2({
+    assign: es6ObjectAssign_1,
+    h: h,
+    pfx: ''
+  });
+  addon(nano);
+  addon$1(nano);
+  addon$2(nano);
+  addon$3(nano);
+  addon$4(nano);
+  var rule = nano.rule,
+      sheet = nano.sheet;
+
+  function buttonStyles(classPrefix, variables) {
+    var _button;
+
+    return {
+      button: (_button = {
+        background: variables.shepherdThemePrimary,
+        borderRadius: variables.shepherdButtonBorderRadius,
+        border: 0,
+        color: variables.shepherdThemeTextPrimary,
+        cursor: 'pointer',
+        display: 'inline-block',
+        fontFamily: 'inherit',
+        fontSize: '0.8em',
+        letterSpacing: '0.1em',
+        lineHeight: '1em',
+        marginRight: '0.5em',
+        padding: '0.75em 2em',
+        textTransform: 'uppercase',
+        transition: 'all 0.5s ease',
+        verticalAlign: 'middle',
+        '&:hover': {
+          background: curriedDarken(0.1, variables.shepherdThemePrimary)
+        }
+      }, _button["&." + classPrefix + "shepherd-button-secondary"] = {
+        background: variables.shepherdThemeSecondary,
+        color: variables.shepherdThemeTextSecondary,
+        '&:hover': {
+          background: curriedDarken(0.1, variables.shepherdThemeSecondary),
+          color: curriedDarken(0.1, variables.shepherdThemeTextSecondary)
+        }
+      }, _button)
+    };
+  }
+
+  function contentStyles(variables) {
+    return {
+      content: {
+        background: variables.shepherdTextBackground,
+        borderRadius: variables.shepherdElementBorderRadius,
+        fontSize: 'inherit',
+        outline: 'none',
+        padding: 0
+      }
+    };
+  }
+
+  function elementStyles() {
+    return {
+      element: {
+        'outline': 'none',
+        // We need box-sizing: border-box on shepherd-element and everything under it
+        '&, *': {
+          '&, &:after, &:before': {
+            boxSizing: 'border-box'
+          }
+        }
+      }
+    };
+  }
+
+  function footerStyles(classPrefix, variables) {
+    var _footer;
+
+    return {
+      footer: (_footer = {
+        borderBottomLeftRadius: variables.shepherdElementBorderRadius,
+        borderBottomRightRadius: variables.shepherdElementBorderRadius,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '0 0.75em 0.75em'
+      }, _footer["." + classPrefix + "shepherd-button"] = {
+        '&:last-child': {
+          marginRight: 0
+        }
+      }, _footer)
+    };
+  }
+
+  /**
+   * Check the luminance of the color and lighten or darken accordingly
+   * @param {string} color The color to check
+   * @return {string} The lightened or darkened color
+   */
+
+  function getLighterOrDarker(color) {
+    var l = getLuminance(color);
+
+    if (l > 0.6) {
+      return curriedDarken(l / 2, color);
+    }
+
+    return curriedLighten((1 - l) / 2, color);
+  }
+
+  function headerStyles(classPrefix, variables) {
+    var _cancelLink, _header;
+
+    return {
+      'cancel-link': (_cancelLink = {
+        background: 'transparent',
+        border: 'none',
+        color: getLighterOrDarker(variables.shepherdThemeTextColor),
+        fontSize: '2em',
+        fontWeight: 'normal',
+        margin: 0,
+        padding: 0,
+        position: 'relative',
+        textDecoration: 'none',
+        transition: 'color 0.5s ease',
+        verticalAlign: 'middle',
+        '&:hover': {
+          color: variables.shepherdThemeTextColor,
+          cursor: 'pointer'
+        }
+      }, _cancelLink["." + classPrefix + "shepherd-has-title ." + classPrefix + "shepherd-content &"] = {
+        color: getLighterOrDarker(variables.shepherdThemeTextHeader),
+        '&:hover': {
+          color: variables.shepherdThemeTextHeader
+        }
+      }, _cancelLink),
+      header: (_header = {
+        alignItems: 'center',
+        borderTopLeftRadius: variables.shepherdElementBorderRadius,
+        borderTopRightRadius: variables.shepherdElementBorderRadius,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        lineHeight: '2em',
+        padding: '0.75em 0.75em 0'
+      }, _header["." + classPrefix + "shepherd-has-title ." + classPrefix + "shepherd-content &"] = {
+        background: variables.shepherdHeaderBackground,
+        padding: '1em'
+      }, _header),
+      title: {
+        color: variables.shepherdThemeTextHeader,
+        display: 'flex',
+        flex: '1 0 auto',
+        fontSize: '1.1em',
+        fontWeight: 'normal',
+        margin: 0,
+        padding: 0,
+        position: 'relative',
+        verticalAlign: 'middle'
+      }
+    };
+  }
+
+  function modalStyles(classPrefix) {
+    var _modalOverlayContai;
+
+    return {
+      'modal-overlay-container': (_modalOverlayContai = {
+        '-ms-filter': 'progid:dximagetransform.microsoft.gradient.alpha(Opacity=50)',
+        filter: 'alpha(opacity=50)',
+        height: 0,
+        left: 0,
+        opacity: 0,
+        overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        transition: 'all 0.3s ease-out, height 0ms 0.3s, opacity 0.3s 0ms',
+        width: '100vw',
+        zIndex: 9997
+      }, _modalOverlayContai["." + classPrefix + "shepherd-modal-is-visible &"] = {
+        height: '100vh',
+        opacity: '0.5',
+        transition: 'all 0.3s ease-out, height 0s 0s, opacity 0.3s 0s'
+      }, _modalOverlayContai),
+      'modal-mask-rect': {
+        height: '100vh',
+        width: '100vw'
+      }
+    };
+  }
+
+  function textStyles(variables) {
+    return {
+      text: {
+        color: variables.shepherdThemeTextColor,
+        fontSize: variables.shepherdTextFontSize,
+        lineHeight: variables.shepherdTextLineHeight,
+        padding: '0.75em',
+        p: {
+          marginTop: 0,
+          '&:last-child': {
+            marginBottom: 0
+          }
+        },
+        'a, a:visited, a:active': {
+          borderBottom: '1px dotted',
+          borderBottomColor: variables.shepherdThemeTextColor,
+          color: variables.shepherdThemeTextColor,
+          textDecoration: 'none',
+          '&:hover': {
+            borderBottomStyle: 'solid'
+          }
+        }
+      }
+    };
+  }
+
+  function generateStyles(options) {
+    var _ref, _active, _xPlacementTop, _ref2, _xPlacementBott, _xPlacementLeft, _xPlacementRigh, _ref3, _extends2, _rule;
+
+    var variables = getVariables(options);
+    var classPrefix = normalizePrefix(options.classPrefix);
+    var tippyPrefix = normalizePrefix(options.tippyClassPrefix);
+
+    var styles = _extends({
+      active: (_active = {}, _active["&." + classPrefix + "shepherd-modal-is-visible"] = (_ref = {}, _ref[":not(." + classPrefix + "shepherd-target)"] = {
+        pointerEvents: 'none'
+      }, _ref["." + classPrefix + "shepherd-button, ." + classPrefix + "shepherd-cancel-link, ." + classPrefix + "shepherd-element, ." + classPrefix + "shepherd-target"] = {
+        pointerEvents: 'auto',
+        '*': {
+          pointerEvents: 'auto'
+        }
+      }, _ref), _active)
+    }, buttonStyles(classPrefix, variables), {}, contentStyles(variables), {}, elementStyles(), {}, footerStyles(classPrefix, variables), {}, headerStyles(classPrefix, variables), {}, modalStyles(classPrefix), {}, textStyles(variables));
+
+    if (variables.useDropShadow) {
+      styles.element.filter = 'drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2))';
+    }
+
+    var classes = sheet(styles, classPrefix + "shepherd");
+    var arrowMargin = "calc((" + variables.arrowSize + " / 2.1) * 16px)";
+    var popperThemeArrows = {
+      '&[x-placement^="top"]': (_xPlacementTop = {
+        marginBottom: arrowMargin
+      }, _xPlacementTop["." + tippyPrefix + "tippy-arrow"] = {
+        borderTopColor: variables.shepherdTextBackground
+      }, _xPlacementTop),
+      '&[x-placement^="bottom"]': (_xPlacementBott = {
+        marginTop: arrowMargin
+      }, _xPlacementBott["." + tippyPrefix + "tippy-arrow"] = {
+        borderBottomColor: variables.shepherdTextBackground
+      }, _xPlacementBott["&." + classPrefix + "shepherd-has-title"] = (_ref2 = {}, _ref2["." + tippyPrefix + "tippy-arrow"] = {
+        borderBottomColor: variables.shepherdHeaderBackground
+      }, _ref2), _xPlacementBott),
+      '&[x-placement^="left"]': (_xPlacementLeft = {
+        marginRight: arrowMargin
+      }, _xPlacementLeft["." + tippyPrefix + "tippy-arrow"] = {
+        borderLeftColor: variables.shepherdTextBackground
+      }, _xPlacementLeft),
+      '&[x-placement^="right"]': (_xPlacementRigh = {
+        marginLeft: arrowMargin
+      }, _xPlacementRigh["." + tippyPrefix + "tippy-arrow"] = {
+        borderRightColor: variables.shepherdTextBackground
+      }, _xPlacementRigh)
+    }; // We have to add the root shepherd class separately
+
+    classes.shepherd = rule((_rule = {}, _rule["&." + tippyPrefix + "tippy-popper"] = _extends({}, popperThemeArrows, (_extends2 = {
+      zIndex: variables.shepherdElementZIndex
+    }, _extends2["." + tippyPrefix + "tippy-tooltip"] = (_ref3 = {
+      backgroundColor: variables.shepherdTextBackground
+    }, _ref3["." + tippyPrefix + "tippy-arrow"] = {
+      transform: "scale(" + variables.arrowSize + ")",
+      zIndex: variables.shepherdElementZIndex + 1
+    }, _ref3["." + tippyPrefix + "tippy-content"] = {
+      maxHeight: variables.shepherdElementMaxHeight,
+      maxWidth: variables.shepherdElementMaxWidth,
+      padding: 0,
+      textAlign: 'center'
+    }, _ref3), _extends2)), _rule), classPrefix + "shepherd");
+    return classes;
+  }
+
+  var Component$7 = preact.Component;
+
+  var ShepherdModal =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(ShepherdModal, _Component);
+
+    function ShepherdModal(props) {
+      var _this;
+
+      _this = _Component.call(this, props) || this;
+      _this._onScreenChange = null;
+      _this.classPrefix = props.classPrefix;
+      autoBind(_assertThisInitialized(_this)); // Setup initial state
+
+      _this.closeModalOpening();
+
+      return _this;
+    }
+
+    var _proto = ShepherdModal.prototype;
+
+    _proto.render = function render(props, state) {
+      var classPrefix = props.classPrefix,
+          styles = props.styles;
+      return preact.h("svg", {
+        className: styles['modal-overlay-container'],
+        onTouchMove: ShepherdModal._preventModalOverlayTouch
+      }, preact.h("defs", null, preact.h("mask", {
+        className: classPrefix + "shepherd-modal-mask",
+        height: "100%",
+        id: classPrefix + "shepherd-modal-mask",
+        width: "100%",
+        x: "0",
+        y: "0"
+      }, preact.h("rect", {
+        className: styles['modal-mask-rect'],
+        fill: "#FFFFFF",
+        height: "100%",
+        width: "100%",
+        x: "0",
+        y: "0"
+      }), preact.h("rect", {
+        className: classPrefix + "shepherd-modal-mask-opening",
+        fill: "#000000",
+        height: state.openingProperties.height,
+        x: state.openingProperties.x,
+        y: state.openingProperties.y,
+        width: state.openingProperties.width
+      }))), preact.h("rect", {
+        height: "100%",
+        width: "100%",
+        x: "0",
+        y: "0",
+        mask: "url(#" + classPrefix + "shepherd-modal-mask)"
+      }));
+    };
+
+    _proto.closeModalOpening = function closeModalOpening() {
+      this.setState({
+        openingProperties: {
+          height: 0,
+          x: 0,
+          y: 0,
+          width: 0
+        }
+      });
+    }
+    /**
+     * Hide the modal overlay
+     */
+    ;
+
+    _proto.hide = function hide() {
+      document.body.classList.remove(this.classPrefix + "shepherd-modal-is-visible"); // Ensure we cleanup all event listeners when we hide the modal
+
+      this._cleanupStepEventListeners();
+    }
+    /**
+     * Uses the bounds of the element we want the opening overtop of to set the dimensions of the opening and position it
+     * @param {HTMLElement} targetElement The element the opening will expose
+     * @param {Number} modalOverlayOpeningPadding An amount of padding to add around the modal overlay opening
+     */
+    ;
+
+    _proto.positionModalOpening = function positionModalOpening(targetElement, modalOverlayOpeningPadding) {
+      if (modalOverlayOpeningPadding === void 0) {
+        modalOverlayOpeningPadding = 0;
+      }
+
+      if (targetElement.getBoundingClientRect) {
+        var _targetElement$getBou = targetElement.getBoundingClientRect(),
+            x = _targetElement$getBou.x,
+            y = _targetElement$getBou.y,
+            width = _targetElement$getBou.width,
+            height = _targetElement$getBou.height,
+            left = _targetElement$getBou.left,
+            top = _targetElement$getBou.top; // getBoundingClientRect is not consistent. Some browsers use x and y, while others use left and top
+
+
+        this.setState({
+          openingProperties: {
+            x: (x || left) - modalOverlayOpeningPadding,
+            y: (y || top) - modalOverlayOpeningPadding,
+            width: width + modalOverlayOpeningPadding * 2,
+            height: height + modalOverlayOpeningPadding * 2
+          }
+        });
+      }
+    }
+    /**
+     * If modal is enabled, setup the svg mask opening and modal overlay for the step
+     * @param {Step} step The step instance
+     */
+    ;
+
+    _proto.setupForStep = function setupForStep(step) {
+      // Ensure we move listeners from the previous step, before we setup new ones
+      this._cleanupStepEventListeners();
+
+      if (step.tour.options.useModalOverlay) {
+        this._styleForStep(step);
+
+        this.show();
+      } else {
+        this.hide();
+      }
+    }
+    /**
+     * Show the modal overlay
+     */
+    ;
+
+    _proto.show = function show() {
+      document.body.classList.add(this.classPrefix + "shepherd-modal-is-visible");
+    }
+    /**
+     * Add resize and scroll event listeners
+     * @private
+     */
+    ;
+
+    _proto._addStepEventListeners = function _addStepEventListeners() {
+      if (typeof this._onScreenChange === 'function') {
+        window.removeEventListener('resize', this._onScreenChange, false);
+        window.removeEventListener('scroll', this._onScreenChange, true);
+      }
+
+      window.addEventListener('resize', this._onScreenChange, false);
+      window.addEventListener('scroll', this._onScreenChange, true); // Prevents window from moving on touch.
+
+      window.addEventListener('touchmove', ShepherdModal._preventModalBodyTouch, {
+        passive: false
+      });
+    }
+    /**
+     * Remove resize and scroll event listeners
+     * @private
+     */
+    ;
+
+    _proto._cleanupStepEventListeners = function _cleanupStepEventListeners() {
+      if (typeof this._onScreenChange === 'function') {
+        window.removeEventListener('resize', this._onScreenChange, false);
+        window.removeEventListener('scroll', this._onScreenChange, true);
+        this._onScreenChange = null;
+      }
+
+      window.removeEventListener('touchmove', ShepherdModal._preventModalBodyTouch, {
+        passive: false
+      });
+    }
+    /**
+     * Style the modal for the step
+     * @param {Step} step The step to style the opening for
+     * @private
+     */
+    ;
+
+    _proto._styleForStep = function _styleForStep(step) {
+      var modalOverlayOpeningPadding = step.options.modalOverlayOpeningPadding;
+
+      if (step.target) {
+        this.positionModalOpening(step.target, modalOverlayOpeningPadding);
+        this._onScreenChange = debounce$2(this.positionModalOpening.bind(this, step.target, modalOverlayOpeningPadding), 0);
+
+        this._addStepEventListeners();
+      } else {
+        this.closeModalOpening();
+      }
+    };
+
+    ShepherdModal._preventModalBodyTouch = function _preventModalBodyTouch(e) {
+      e.preventDefault();
+    };
+
+    ShepherdModal._preventModalOverlayTouch = function _preventModalOverlayTouch(e) {
+      e.stopPropagation();
+    };
+
+    return ShepherdModal;
+  }(Component$7);
+
+  var render$2 = preact.render;
+  /**
    * Creates incremented ID for each newly created tour
    *
+   * @return {Function} A function that returns the unique id for the tour
    * @private
-   * @return {Number} The unique id for the tour
    */
 
   var uniqueId$1 = function () {
@@ -7271,14 +9724,20 @@
   var Tour =
   /*#__PURE__*/
   function (_Evented) {
-    _inherits(Tour, _Evented);
+    _inheritsLoose(Tour, _Evented);
 
     /**
      * @param {Object} options The options for the tour
+     * @param {boolean} options.confirmCancel If true, will issue a `window.confirm` before cancelling
+     * @param {string} options.confirmCancelMessage The message to display in the confirm dialog
+     * @param {string} options.classPrefix The prefix to add to all the `shepherd-*` class names.
      * @param {Object} options.defaultStepOptions Default options for Steps ({@link Step#constructor}), created through `addStep`
      * @param {boolean} options.disableScroll When set to true, will keep the user from scrolling with the scrollbar,
      * mousewheel, arrow keys, etc. You may want to use this to ensure you are driving the scroll position with the tour.
-     * @param {Step[]} options.steps An array of Step instances to initialize the tour with
+     * @param {HTMLElement} options.modalContainer An optional container element for the modal.
+     * If not set, the modal will be appended to `document.body`.
+     * @param {object[] | Step[]} options.steps An array of step options objects or Step instances to initialize the tour with
+     * @param {object} options.styleVariables An object hash of style variables to override
      * @param {string} options.tourName An optional "name" for the tour. This will be appended to the the tour's
      * dynamically generated `id` property -- which is also set on the `body` element as the `data-shepherd-active-tour` attribute
      * whenever the tour becomes active.
@@ -7287,17 +9746,22 @@
      * can remain interactive
      * @returns {Tour}
      */
-    function Tour() {
+    function Tour(options) {
       var _this;
 
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      if (options === void 0) {
+        options = {};
+      }
 
-      _classCallCheck(this, Tour);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Tour).call(this, options));
-      bindMethods.call(_assertThisInitialized(_this), ['back', 'cancel', 'complete', 'hide', 'next']);
+      _this = _Evented.call(this, options) || this;
+      autoBind(_assertThisInitialized(_this));
       _this.options = options;
-      _this.steps = _this.options.steps || []; // Pass these events onto the global Shepherd object
+      _this.classPrefix = _this.options ? normalizePrefix(_this.options.classPrefix) : '';
+      _this.styles = generateStyles(options);
+      _this.steps = [];
+
+      _this.addSteps(_this.options.steps); // Pass these events onto the global Shepherd object
+
 
       var events = ['active', 'cancel', 'complete', 'inactive', 'show', 'start'];
       events.map(function (event) {
@@ -7309,402 +9773,372 @@
           });
         })(event);
       });
-      _this.modal = new Modal(options);
+      var existingModal = document.querySelector("." + _this.classPrefix + "shepherd-modal-overlay-container");
+      render$2(preact.h(ShepherdModal, {
+        classPrefix: _this.classPrefix,
+        ref: function ref(c) {
+          return _this.modal = c;
+        },
+        styles: _this.styles
+      }), options.modalContainer || document.body, existingModal);
 
       _this._setTooltipDefaults();
 
       _this._setTourID();
 
-      return _possibleConstructorReturn(_this, _assertThisInitialized(_this));
+      return _assertThisInitialized(_this) || _assertThisInitialized(_this);
     }
     /**
      * Adds a new step to the tour
-     * @param {Object|Number|Step|String} arg1
-     * When arg2 is defined, arg1 can either be a string or number, to use for the `id` for the step
-     * When arg2 is undefined, arg1 is either an object containing step options or a Step instance
-     * @param {Object|Step} arg2 An object containing step options or a Step instance
+     * @param {Object|Step} options An object containing step options or a Step instance
      * @return {Step} The newly added step
      */
 
 
-    _createClass(Tour, [{
-      key: "addStep",
-      value: function addStep(arg1, arg2) {
-        var name, step; // If we just have one argument, we can assume it is an object of step options, with an id
+    var _proto = Tour.prototype;
 
-        if (isUndefined(arg2)) {
-          step = arg1;
-        } else {
-          name = arg1;
-          step = arg2;
-        }
+    _proto.addStep = function addStep(options) {
+      var step = options;
 
-        if (!(step instanceof Step)) {
-          step = this.setupStep(step, name);
-        } else {
-          step.tour = this;
-        }
-
-        this.steps.push(step);
-        return step;
+      if (!(step instanceof Step)) {
+        step = this._setupStep(step);
+      } else {
+        step.tour = this;
       }
-      /**
-       * Go to the previous step in the tour
-       */
 
-    }, {
-      key: "back",
-      value: function back() {
-        var index = this.steps.indexOf(this.currentStep);
-        this.show(index - 1, false);
+      this.steps.push(step);
+      return step;
+    }
+    /**
+     * Add multiple steps to the tour
+     * @param {Array<object> | Array<Step>} steps The steps to add to the tour
+     */
+    ;
+
+    _proto.addSteps = function addSteps(steps) {
+      var _this2 = this;
+
+      if (Array.isArray(steps)) {
+        steps.forEach(function (step) {
+          _this2.addStep(step);
+        });
       }
-      /**
-       * Calls done() triggering the 'cancel' event
-       * If `confirmCancel` is true, will show a window.confirm before cancelling
-       */
 
-    }, {
-      key: "cancel",
-      value: function cancel() {
-        if (this.options.confirmCancel) {
-          var cancelMessage = this.options.confirmCancelMessage || 'Are you sure you want to stop the tour?';
-          var stopTour = window.confirm(cancelMessage);
+      return this;
+    }
+    /**
+     * Go to the previous step in the tour
+     */
+    ;
 
-          if (stopTour) {
-            this.done('cancel');
+    _proto.back = function back() {
+      var index = this.steps.indexOf(this.currentStep);
+      this.show(index - 1, false);
+    }
+    /**
+     * Calls _done() triggering the 'cancel' event
+     * If `confirmCancel` is true, will show a window.confirm before cancelling
+     */
+    ;
+
+    _proto.cancel = function cancel() {
+      if (this.options.confirmCancel) {
+        var cancelMessage = this.options.confirmCancelMessage || 'Are you sure you want to stop the tour?';
+        var stopTour = window.confirm(cancelMessage);
+
+        if (stopTour) {
+          this._done('cancel');
+        }
+      } else {
+        this._done('cancel');
+      }
+    }
+    /**
+     * Calls _done() triggering the `complete` event
+     */
+    ;
+
+    _proto.complete = function complete() {
+      this._done('complete');
+    }
+    /**
+     * Gets the step from a given id
+     * @param {Number|String} id The id of the step to retrieve
+     * @return {Step} The step corresponding to the `id`
+     */
+    ;
+
+    _proto.getById = function getById(id) {
+      return this.steps.find(function (step) {
+        return step.id === id;
+      });
+    }
+    /**
+     * Gets the current step
+     * @returns {Step|null}
+     */
+    ;
+
+    _proto.getCurrentStep = function getCurrentStep() {
+      return this.currentStep;
+    }
+    /**
+     * Hide the current step
+     */
+    ;
+
+    _proto.hide = function hide() {
+      var currentStep = this.getCurrentStep();
+
+      if (currentStep) {
+        return currentStep.hide();
+      }
+    }
+    /**
+     * Check if the tour is active
+     * @return {boolean}
+     */
+    ;
+
+    _proto.isActive = function isActive() {
+      return Shepherd.activeTour === this;
+    }
+    /**
+     * Go to the next step in the tour
+     * If we are at the end, call `complete`
+     */
+    ;
+
+    _proto.next = function next() {
+      var index = this.steps.indexOf(this.currentStep);
+
+      if (index === this.steps.length - 1) {
+        this.complete();
+      } else {
+        this.show(index + 1, true);
+      }
+    }
+    /**
+     * Removes the step from the tour
+     * @param {String} name The id for the step to remove
+     */
+    ;
+
+    _proto.removeStep = function removeStep(name) {
+      var _this3 = this;
+
+      var current = this.getCurrentStep(); // Find the step, destroy it and remove it from this.steps
+
+      this.steps.some(function (step, i) {
+        if (step.id === name) {
+          if (step.isOpen()) {
+            step.hide();
           }
-        } else {
-          this.done('cancel');
+
+          step.destroy();
+
+          _this3.steps.splice(i, 1);
+
+          return true;
         }
-      }
-      /**
-       * Calls done() triggering the `complete` event
-       */
+      });
 
-    }, {
-      key: "complete",
-      value: function complete() {
-        this.done('complete');
-      }
-      /**
-       * Called whenever the tour is cancelled or completed, basically anytime we exit the tour
-       * @param {String} event The event name to trigger
-       */
+      if (current && current.id === name) {
+        this.currentStep = undefined; // If we have steps left, show the first one, otherwise just cancel the tour
 
-    }, {
-      key: "done",
-      value: function done(event) {
-        if (Array.isArray(this.steps)) {
-          this.steps.forEach(function (step) {
-            return step.destroy();
+        this.steps.length ? this.show(0) : this.cancel();
+      }
+    }
+    /**
+     * Show a specific step in the tour
+     * @param {Number|String} key The key to look up the step by
+     * @param {Boolean} forward True if we are going forward, false if backward
+     */
+    ;
+
+    _proto.show = function show(key, forward) {
+      if (key === void 0) {
+        key = 0;
+      }
+
+      if (forward === void 0) {
+        forward = true;
+      }
+
+      var step = isString(key) ? this.getById(key) : this.steps[key];
+
+      if (step) {
+        this._updateStateBeforeShow();
+
+        var shouldSkipStep = isFunction(step.options.showOn) && !step.options.showOn(); // If `showOn` returns false, we want to skip the step, otherwise, show the step like normal
+
+        if (shouldSkipStep) {
+          this._skipStep(step, forward);
+        } else {
+          this.trigger('show', {
+            step: step,
+            previous: this.currentStep
           });
+          this.currentStep = step;
+          step.show();
         }
+      }
+    }
+    /**
+     * Start the tour
+     */
+    ;
 
-        cleanupStepEventListeners.call(this);
-        cleanupSteps(this.tourObject);
-        this.modal.cleanup();
-        this.trigger(event);
-        Shepherd.activeTour = null;
+    _proto.start = function start() {
+      this.trigger('start');
 
-        this._removeBodyAttrs();
+      if (this.options.disableScroll) {
+        bodyScrollLock.disableBodyScroll();
+      } // Save the focused element before the tour opens
 
-        this.trigger('inactive', {
-          tour: this
+
+      this.focusedElBeforeOpen = document.activeElement;
+      this.currentStep = null;
+
+      this._setupActiveTour();
+
+      this.next();
+    }
+    /**
+     * Called whenever the tour is cancelled or completed, basically anytime we exit the tour
+     * @param {String} event The event name to trigger
+     * @private
+     */
+    ;
+
+    _proto._done = function _done(event) {
+      var index = this.steps.indexOf(this.currentStep);
+
+      if (Array.isArray(this.steps)) {
+        this.steps.forEach(function (step) {
+          return step.destroy();
         });
-
-        if (this.options.disableScroll) {
-          clearAllBodyScrollLocks();
-        }
       }
-      /**
-       * Gets the step from a given id
-       * @param {Number|String} id The id of the step to retrieve
-       * @return {Step} The step corresponding to the `id`
-       */
 
-    }, {
-      key: "getById",
-      value: function getById(id) {
-        return this.steps.find(function (step) {
-          return step.id === id;
-        });
+      cleanupSteps(this);
+      this.trigger(event, {
+        index: index
+      });
+      Shepherd.activeTour = null;
+
+      this._removeBodyAttrs();
+
+      this.trigger('inactive', {
+        tour: this
+      });
+
+      if (this.options.disableScroll) {
+        bodyScrollLock.clearAllBodyScrollLocks();
       }
-      /**
-       * Gets the current step
-       * @returns {Step|null}
-       */
 
-    }, {
-      key: "getCurrentStep",
-      value: function getCurrentStep() {
-        return this.currentStep;
+      this.modal.hide(); // Focus the element that was focused before the tour started
+
+      if (isElement(this.focusedElBeforeOpen)) {
+        this.focusedElBeforeOpen.focus();
       }
-      /**
-       * Hide the current step
-       */
+    }
+    /**
+     * Make this tour "active"
+     * @private
+     */
+    ;
 
-    }, {
-      key: "hide",
-      value: function hide() {
-        var currentStep = this.getCurrentStep();
+    _proto._setupActiveTour = function _setupActiveTour() {
+      this._addBodyAttrs();
 
-        if (currentStep) {
-          return currentStep.hide();
-        }
+      this.trigger('active', {
+        tour: this
+      });
+      Shepherd.activeTour = this;
+    }
+    /**
+     * Setup a new step object
+     * @param {Object} stepOptions The object describing the options for the step
+     * @return {Step} The step instance
+     * @private
+     */
+    ;
+
+    _proto._setupStep = function _setupStep(stepOptions) {
+      stepOptions = _extends({}, this.options.defaultStepOptions, stepOptions);
+      return new Step(this, stepOptions);
+    }
+    /**
+     * Called when `showOn` evaluates to false, to skip the step
+     * @param {Step} step The step to skip
+     * @param {Boolean} forward True if we are going forward, false if backward
+     * @private
+     */
+    ;
+
+    _proto._skipStep = function _skipStep(step, forward) {
+      var index = this.steps.indexOf(step);
+      var nextIndex = forward ? index + 1 : index - 1;
+      this.show(nextIndex, forward);
+    }
+    /**
+     * Set the tippy defaults
+     * @private
+     */
+    ;
+
+    _proto._setTooltipDefaults = function _setTooltipDefaults() {
+      tippy.setDefaultProps(defaults);
+    }
+    /**
+     * Before showing, hide the current step and if the tour is not
+     * already active, call `this._setupActiveTour`.
+     * @private
+     */
+    ;
+
+    _proto._updateStateBeforeShow = function _updateStateBeforeShow() {
+      if (this.currentStep) {
+        this.currentStep.hide();
       }
-      /**
-       * Check if the tour is active
-       * @return {boolean}
-       */
 
-    }, {
-      key: "isActive",
-      value: function isActive() {
-        return Shepherd.activeTour === this;
-      }
-      /**
-       * Go to the next step in the tour
-       * If we are at the end, call `complete`
-       */
-
-    }, {
-      key: "next",
-      value: function next() {
-        var index = this.steps.indexOf(this.currentStep);
-
-        if (index === this.steps.length - 1) {
-          this.complete();
-        } else {
-          this.show(index + 1, true);
-        }
-      }
-      /**
-       * Removes the step from the tour
-       * @param {String} name The id for the step to remove
-       */
-
-    }, {
-      key: "removeStep",
-      value: function removeStep(name) {
-        var _this2 = this;
-
-        var current = this.getCurrentStep(); // Find the step, destroy it and remove it from this.steps
-
-        this.steps.some(function (step, i) {
-          if (step.id === name) {
-            if (step.isOpen()) {
-              step.hide();
-            }
-
-            step.destroy();
-
-            _this2.steps.splice(i, 1);
-
-            return true;
-          }
-        });
-
-        if (current && current.id === name) {
-          this.currentStep = undefined; // If we have steps left, show the first one, otherwise just cancel the tour
-
-          this.steps.length ? this.show(0) : this.cancel();
-        }
-      }
-      /**
-       * Setup a new step object
-       * @param {Object} stepOptions The object describing the options for the step
-       * @param {String|Number} name The string or number to use as the `id` for the step
-       * @return {Step} The step instance
-       */
-
-    }, {
-      key: "setupStep",
-      value: function setupStep(stepOptions, name) {
-        if (isString(name) || isNumber(name)) {
-          stepOptions.id = name.toString();
-        }
-
-        stepOptions = _extends({}, this.options.defaultStepOptions, stepOptions);
-        return new Step(this, stepOptions);
-      }
-    }, {
-      key: "beforeShowStep",
-      value: function beforeShowStep(step) {
-        this.modal.setupForStep(step);
-
-        this._styleTargetElementForStep(step);
-      }
-      /**
-       * Show a specific step in the tour
-       * @param {Number|String} key The key to look up the step by
-       * @param {Boolean} forward True if we are going forward, false if backward
-       */
-
-    }, {
-      key: "show",
-      value: function show() {
-        var key = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-        var forward = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-        var step = isString(key) ? this.getById(key) : this.steps[key];
-
-        if (step) {
-          this._updateStateBeforeShow();
-
-          var shouldSkipStep = isFunction(step.options.showOn) && !step.options.showOn(); // If `showOn` returns false, we want to skip the step, otherwise, show the step like normal
-
-          if (shouldSkipStep) {
-            this._skipStep(step, forward);
-          } else {
-            this.trigger('show', {
-              step: step,
-              previous: this.currentStep
-            });
-            this.currentStep = step;
-            step.show();
-          }
-        }
-      }
-      /**
-       * Start the tour
-       */
-
-    }, {
-      key: "start",
-      value: function start() {
-        this.trigger('start');
-
-        if (this.options.disableScroll) {
-          disableBodyScroll();
-        }
-
-        this.currentStep = null;
-
+      if (!this.isActive()) {
         this._setupActiveTour();
-
-        this.next();
       }
-      /**
-       * Make this tour "active"
-       * @private
-       */
+    }
+    /**
+     * Sets this.id to `${tourName}--${uuid}`
+     * @private
+     */
+    ;
 
-    }, {
-      key: "_setupActiveTour",
-      value: function _setupActiveTour() {
-        this.modal.createModalOverlay();
+    _proto._setTourID = function _setTourID() {
+      var tourName = this.options.tourName || 'tour';
+      var uuid = uniqueId$1();
+      this.id = tourName + "--" + uuid;
+    }
+    /**
+     * Adds the data-shepherd-active-tour attribute and the 'shepherd-active'
+     * class to the body.
+     * @private
+     */
+    ;
 
-        this._addBodyAttrs();
+    _proto._addBodyAttrs = function _addBodyAttrs() {
+      document.body.setAttribute("data-" + this.classPrefix + "shepherd-active-tour", this.id);
+      document.body.classList.add(this.styles.active.trim());
+    }
+    /**
+     * Removes the data-shepherd-active-tour attribute and the 'shepherd-active'
+     * class from the body.
+     * @private
+     */
+    ;
 
-        this.trigger('active', {
-          tour: this
-        });
-        Shepherd.activeTour = this;
-      }
-      /**
-       * Modulates the styles of the passed step's target element, based on the step's options and
-       * the tour's `modal` option, to visually emphasize the element
-       *
-       * @param step The step object that attaches to the element
-       * @private
-       */
-
-    }, {
-      key: "_styleTargetElementForStep",
-      value: function _styleTargetElementForStep(step) {
-        var targetElement = getElementForStep(step);
-
-        if (!targetElement) {
-          return;
-        }
-
-        toggleShepherdModalClass(targetElement);
-
-        if (step.options.highlightClass) {
-          targetElement.classList.add(step.options.highlightClass);
-        }
-
-        if (step.options.canClickTarget === false) {
-          targetElement.style.pointerEvents = 'none';
-        }
-      }
-      /**
-       * Called when `showOn` evaluates to false, to skip the step
-       * @param {Step} step The step to skip
-       * @param {Boolean} forward True if we are going forward, false if backward
-       * @private
-       */
-
-    }, {
-      key: "_skipStep",
-      value: function _skipStep(step, forward) {
-        var index = this.steps.indexOf(step);
-        var nextIndex = forward ? index + 1 : index - 1;
-        this.show(nextIndex, forward);
-      }
-      /**
-       * Set the tippy defaults
-       * @private
-       */
-
-    }, {
-      key: "_setTooltipDefaults",
-      value: function _setTooltipDefaults() {
-        tippy.setDefaults(defaults);
-      }
-      /**
-       * Before showing, hide the current step and if the tour is not
-       * already active, call `this._setupActiveTour`.
-       * @private
-       */
-
-    }, {
-      key: "_updateStateBeforeShow",
-      value: function _updateStateBeforeShow() {
-        if (this.currentStep) {
-          this.currentStep.hide();
-        }
-
-        if (!this.isActive()) {
-          this._setupActiveTour();
-        }
-      }
-      /**
-       * Sets this.id to `${tourName}--${uuid}`
-       * @private
-       */
-
-    }, {
-      key: "_setTourID",
-      value: function _setTourID() {
-        var tourName = this.options.tourName || 'tour';
-        var uuid = uniqueId$1();
-        this.id = "".concat(tourName, "--").concat(uuid);
-      }
-      /**
-       * Adds the data-shepherd-active-tour attribute and the 'shepherd-active'
-       * class to the body.
-       * @private
-       */
-
-    }, {
-      key: "_addBodyAttrs",
-      value: function _addBodyAttrs() {
-        document.body.setAttribute('data-shepherd-active-tour', this.id);
-        document.body.classList.add('shepherd-active');
-      }
-      /**
-       * Removes the data-shepherd-active-tour attribute and the 'shepherd-active'
-       * class from the body.
-       * @private
-       */
-
-    }, {
-      key: "_removeBodyAttrs",
-      value: function _removeBodyAttrs() {
-        document.body.removeAttribute('data-shepherd-active-tour');
-        document.body.classList.remove('shepherd-active');
-      }
-    }]);
+    _proto._removeBodyAttrs = function _removeBodyAttrs() {
+      document.body.removeAttribute("data-" + this.classPrefix + "shepherd-active-tour");
+      document.body.classList.remove(this.styles.active.trim());
+    };
 
     return Tour;
   }(Evented);

@@ -4,7 +4,7 @@
 
 This gem wraps the [Shepherd](https://github.com/shipshapecode/shepherd) JavaScript library so that it can be included easily in the Rails asset pipeline.
 
-Actual Shepherd Version: 3.1.0
+Actual Shepherd Version: 34.6.0
 
 ## Installation
 
